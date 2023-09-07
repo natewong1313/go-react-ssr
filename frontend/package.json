@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "build": "esbuild ./src/test.tsx --bundle --minify --sourcemap --outfile=out.js"
+  },
+  "dependencies": {
+    "esbuild": "0.19.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
+    "typescript": "^5.2.2"
+  }
+}
