@@ -4,8 +4,9 @@ import { useState } from "react";
 import Component from "./Component";
 type Props = {
   initialCount: number;
+  msg: string;
 };
-function Home({ initialCount }: Props) {
+function Home({ initialCount, msg }: Props) {
   const [count, setCount] = useState(initialCount);
 
   return (
@@ -23,9 +24,7 @@ function Home({ initialCount }: Props) {
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Rspack and React logos to learn more
-      </p>
+      <p className="read-the-docs">{msg}</p>
     </div>
   );
 }

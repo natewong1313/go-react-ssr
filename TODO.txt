@@ -1,0 +1,6 @@
+- Props from go to react
+- type-safe structs
+- External css
+- SSG
+- Precompile routes
+- Hot reload

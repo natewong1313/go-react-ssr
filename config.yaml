@@ -1,0 +1,3 @@
+web:
+  public-dir: "./web/public"
+  src-dir: "./web/src"
