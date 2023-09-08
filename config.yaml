@@ -1,4 +1,4 @@
-web:
-  public-dir: "./web/public"
-  src-dir: "./web/src"
-  generated-types-path: "./web/src/generated.d.ts"
+frontend:
+  public-dir: "./frontend/public"
+  src-dir: "./frontend/src"
+  generated-types-path: "./frontend/src/generated.d.ts"

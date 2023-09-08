@@ -23,10 +23,10 @@ func main() {
     hot_reload.StartWatching()
 
     g := gin.Default()
-    g.Use(gin.Recovery())
-
+    g.SetTrustedProxies(nil)
     // g.Static("/public", "./public")
-    g.LoadHTMLGlob(config.Config.Web.PublicDirectory+"/*")
+    // g.LoadHTMLGlob(config.Config.Web.PublicDirectory+"/*")
+    g.LoadHTMLFiles(config.Config.Web.PublicDirectory+"/index.html")
     router.InitRoutes(g)
     
     g.Run()

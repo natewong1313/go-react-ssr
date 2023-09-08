@@ -11,7 +11,7 @@ type config struct {
         PublicDirectory string `yaml:"public-dir"`
         SrcDirectory string `yaml:"src-dir"`
         GeneratedTypesPath string `yaml:"generated-types-path"`
-    } `yaml:"web"`
+    } `yaml:"frontend"`
 }
 
 var Config config

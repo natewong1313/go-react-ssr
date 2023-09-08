@@ -14,7 +14,7 @@ function Home({ initialCount, msg }: IndexRouteProps) {
       <div>
         <a href="https://reactjs.org" target="_blank"></a>
       </div>
-      <h1>React + Go!</h1>
+      <h1>React + Go</h1>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}

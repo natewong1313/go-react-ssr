@@ -14,32 +14,30 @@
   <body>
     <div id="root"></div>
     <script type="module">
-      {{index . "src"}}
+      try{
+        {{index . "src"}}
+      } catch (e) {
+        document.getElementById("root").innerHTML = `<div style="background: #f7f7f7; font-family: Helvetica; padding: 4px 16px"> <h1>An error occured</h1> <p style="color: red">${e.stack}</p> </div>`;
+      }
     </script>
     <script>
       let socket = new WebSocket("ws://127.0.0.1:8080/ws/hotreload");
-      console.log("Attempting Connection...");
-
-      socket.onopen = () => {
-        console.log("Successfully Connected");
-        socket.send("Hi From the Client!");
-      };
+      // socket.onopen = () => {
+      //   console.log("Successfully Connected");
+      // };
 
       socket.onmessage = (event) => {
         if (event.data === "reload") {
-          console.log("Reloading...");
+          console.log("Change detected, reloading...");
           window.location.reload();
         }
       };
 
-      socket.onclose = (event) => {
-        console.log("Socket Closed Connection: ", event);
-        socket.send("Client Closed!");
-      };
+      // socket.onclose = (event) => {
+      //   socket.send("Client Closed!");
+      // };
 
-      socket.onerror = (error) => {
-        console.log("Socket Error: ", error);
-      };
+      // socket.onerror = (error) => {};
     </script>
   </body>
 </html>
