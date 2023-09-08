@@ -1,7 +1,7 @@
 import { useState } from "react";
 // import * as React from "react";
 // import * as ReactDOM from "react-dom";
-import Component from "./Component";
+import Component from "./components/Component";
 
 function App() {
   const [count, setCount] = useState(0);

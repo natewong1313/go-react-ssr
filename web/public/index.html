@@ -2,9 +2,14 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/react.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Go React SSR</title>
+    <title>{{index . "title"}}</title>
+    {{range $k, $v := index . "metaTags"}}
+    <meta name="{{$k}}" content="{{$v}}" />
+    {{end}} {{range $k, $v := index . "ogMetaTags"}}
+    <meta property="{{$k}}" content="{{$v}}" />
+    {{end}}
+    <link rel="icon" type="image/svg+xml" href="/react.svg" />
   </head>
   <body>
     <div id="root"></div>

@@ -1,9 +1,9 @@
 package main
 
 import (
+	"gossr/api/router"
 	"gossr/config"
-	typeconverter "gossr/pkg/type_converter"
-	"gossr/router"
+	"gossr/pkg/type_converter"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +14,10 @@ func main() {
         panic(err)
     }
 
-    typeconverter.Init()
+    err = type_converter.Init()
+    if err != nil{
+        panic(err)
+    }
 
     g := gin.Default()
     g.Use(gin.Recovery())

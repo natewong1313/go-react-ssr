@@ -1,8 +1,7 @@
-package typeconverter
+package type_converter
 
 import (
 	"gossr/config"
-	"gossr/models"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -30,7 +29,7 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 	}
 	defer file.Close()
 
-	t := template.Must(template.New("").Parse(models.TEMPLATE))
+	t := template.Must(template.New("").Parse(TEMPLATE))
 
 	structsArr := make([]string, 0)
 	for _, structName := range structNames {
@@ -40,7 +39,7 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 		}
 	}
 
-	var params models.TemplateParams
+	var params TemplateParams
 	params.Structs = structsArr
 	
 	params.ModelsPackage = getModelsPackageName()
@@ -60,5 +59,5 @@ func getModelsPackageName() string {
 	if buildInfo == nil {
 		return ""
 	}
-	return buildInfo.Main.Path + "/models"
+	return buildInfo.Main.Path + "/api/models"
 }

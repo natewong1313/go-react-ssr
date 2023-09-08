@@ -1,4 +1,4 @@
-package typeconverter
+package type_converter
 
 import (
 	"go/ast"

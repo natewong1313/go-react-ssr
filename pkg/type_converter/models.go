@@ -1,13 +1,10 @@
-package models
+package type_converter
 
 import "strings"
-
 
 const TEMPLATE = `package main
 
 import (
-	"fmt"
-
 	m "{{ .ModelsPackage }}"
 	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
@@ -24,7 +21,6 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Println("OK")
 }`
 
 type TemplateParams struct {
