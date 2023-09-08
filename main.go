@@ -2,12 +2,14 @@ package main
 
 import (
 	"gossr/config"
+	typeconverter "gossr/pkg/type_converter"
 	"gossr/router"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+    typeconverter.Scan()
     err := config.LoadConfig()
     if err != nil{
         panic(err)
