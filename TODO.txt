@@ -1,6 +1,5 @@
 - External css
 - SSG
 - Precompile routes
-- Hot reload
-- meta tags
 - Config defaults
+- logging

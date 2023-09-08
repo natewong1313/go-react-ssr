@@ -3,6 +3,7 @@ package main
 import (
 	"gossr/api/router"
 	"gossr/config"
+	"gossr/pkg/hot_reload"
 	"gossr/pkg/type_converter"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,8 @@ func main() {
     if err != nil{
         panic(err)
     }
+
+    hot_reload.StartWatching()
 
     g := gin.Default()
     g.Use(gin.Recovery())

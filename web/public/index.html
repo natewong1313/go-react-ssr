@@ -16,5 +16,30 @@
     <script type="module">
       {{index . "src"}}
     </script>
+    <script>
+      let socket = new WebSocket("ws://127.0.0.1:8080/ws/hotreload");
+      console.log("Attempting Connection...");
+
+      socket.onopen = () => {
+        console.log("Successfully Connected");
+        socket.send("Hi From the Client!");
+      };
+
+      socket.onmessage = (event) => {
+        if (event.data === "reload") {
+          console.log("Reloading...");
+          window.location.reload();
+        }
+      };
+
+      socket.onclose = (event) => {
+        console.log("Socket Closed Connection: ", event);
+        socket.send("Client Closed!");
+      };
+
+      socket.onerror = (error) => {
+        console.log("Socket Error: ", error);
+      };
+    </script>
   </body>
 </html>

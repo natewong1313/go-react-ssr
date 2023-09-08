@@ -39,7 +39,7 @@ func buildFile(filePath, props string) (string, error){
 func makeRendererFile(route, props string)(string, error) {
     fileExtension := filepath.Ext(route)
     fileName := filepath.Base(route)
-    newFilePath := strings.Replace(route, fileExtension, "-temporary"+fileExtension, 1)
+    newFilePath := strings.Replace(route, fileExtension, "-gossr-temporary"+fileExtension, 1)
 	// Create the file if it doesn't exist
     file, err := os.OpenFile(newFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
     if err != nil {
