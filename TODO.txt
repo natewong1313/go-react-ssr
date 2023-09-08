@@ -4,3 +4,4 @@
 - SSG
 - Precompile routes
 - Hot reload
+- Config defaults

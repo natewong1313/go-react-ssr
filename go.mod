@@ -10,7 +10,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require golang.org/x/mod v0.12.0 // indirect
+require (
+	github.com/tkrajina/go-reflector v0.5.5 // indirect
+	github.com/tkrajina/typescriptify-golang-structs v0.1.10 // indirect
+	golang.org/x/mod v0.12.0 // indirect
+)
 
 require (
 	github.com/bytedance/sonic v1.10.0 // indirect
@@ -32,6 +36,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
+	github.com/tompston/gut v0.0.4
+	github.com/traefik/yaegi v0.15.1
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.4.0 // indirect

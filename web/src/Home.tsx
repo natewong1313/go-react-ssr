@@ -2,11 +2,9 @@ import { useState } from "react";
 // import * as React from "react";
 // import * as ReactDOM from "react-dom";
 import Component from "./Component";
-type Props = {
-  initialCount: number;
-  msg: string;
-};
-function Home({ initialCount, msg }: Props) {
+import { IndexRouteProps } from "./generated";
+
+function Home({ initialCount, msg }: IndexRouteProps) {
   const [count, setCount] = useState(initialCount);
 
   return (

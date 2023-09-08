@@ -9,11 +9,12 @@ import (
 )
 
 func main() {
-    typeconverter.Scan()
     err := config.LoadConfig()
     if err != nil{
         panic(err)
     }
+
+    typeconverter.Init()
 
     g := gin.Default()
     g.Use(gin.Recovery())

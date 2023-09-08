@@ -1,3 +1,4 @@
 web:
   public-dir: "./web/public"
   src-dir: "./web/src"
+  generated-types-path: "./web/src/generated.d.ts"
