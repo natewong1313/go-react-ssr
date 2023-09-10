@@ -3,6 +3,7 @@ package hot_reload
 import (
 	"fmt"
 	"gossr/config"
+	"gossr/pkg/react_renderer"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,6 +29,7 @@ func StartWatching() {
 				if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "-gossr-temporary"){
 					fmt.Println(event.Name)
 					fmt.Printf("EVENT! %#v\n", event)
+					go react_renderer.UpdateCacheOnFileChange(event.Name)
 					go BroadcastFileUpdateToClients()
 				}
 			case err := <-watcher.Errors:

@@ -1,5 +1,5 @@
 - External css
 - SSG
-- Precompile routes
-- Config defaults (use viper)
+- Config defaults
+- Use viper for config
 - logging

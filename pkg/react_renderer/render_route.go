@@ -29,19 +29,23 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
     }
     // Get the full path of the file
     filePath := config.Config.Web.SrcDirectory + "/" + renderConfig.File
-    compiledJS, err := buildFile(filePath, props)
-    if err != nil {
-        c.String(500, err.Error())
-    }else{
-        title := getTitle(renderConfig.MetaTags)
-        delete(renderConfig.MetaTags, "title")
-        c.HTML(http.StatusOK, "index.html", gin.H{
-            "title": title,
-            "metaTags": getMetaTags(renderConfig.MetaTags),
-            "ogMetaTags": getOGMetaTags(renderConfig.MetaTags),
-            "src": template.JS(compiledJS),
-        })
+    compiledJS, ok := checkForCachedBuild(filePath)
+    if !ok {
+        var err error
+        compiledJS, err = BuildFile(filePath, props)
+        if err != nil {
+            c.String(500, err.Error())
+        }
+        cacheBuild(filePath, compiledJS)
     }
+    title := getTitle(renderConfig.MetaTags)
+    delete(renderConfig.MetaTags, "title")
+    c.HTML(http.StatusOK, "index.html", gin.H{
+        "title": title,
+        "metaTags": getMetaTags(renderConfig.MetaTags),
+        "ogMetaTags": getOGMetaTags(renderConfig.MetaTags),
+        "src": template.JS(compiledJS),
+    })
 }
 
 func getTitle(metaTags map[string]string) string {

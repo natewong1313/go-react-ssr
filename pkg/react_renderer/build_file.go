@@ -10,7 +10,7 @@ import (
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
 )
 
-func buildFile(filePath, props string) (string, error){
+func BuildFile(filePath, props string) (string, error){
 	// Get the path of the renderer file
     newFilePath, err := makeRendererFile(filePath, props)
     if err != nil {

@@ -3,6 +3,8 @@ package type_converter
 import (
 	"fmt"
 	"os/exec"
+
+	_ "github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 
 func Init() error {
