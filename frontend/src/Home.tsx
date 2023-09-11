@@ -3,7 +3,7 @@ import { useState } from "react";
 // import * as ReactDOM from "react-dom";
 import Component from "./components/Component";
 import { IndexRouteProps } from "./generated";
-import "../public/test.css";
+import "./test.css";
 import horseImg from "../public/horse.png";
 
 function Home({ initialCount, msg }: IndexRouteProps) {
@@ -16,7 +16,7 @@ function Home({ initialCount, msg }: IndexRouteProps) {
       <div>
         <a href="https://reactjs.org" target="_blank"></a>
       </div>
-      <h1>React + Go</h1>
+      <h1>React + Go!</h1>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}

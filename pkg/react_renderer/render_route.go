@@ -2,6 +2,7 @@ package react_renderer
 
 import (
 	"encoding/json"
+	"fmt"
 	"gossr/config"
 	"html/template"
 	"net/http"
@@ -28,19 +29,26 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
         props = string(propsJSON)
     }
     // Get the full path of the file
-    filePath := config.Config.Web.SrcDirectory + "/" + renderConfig.File
+    filePath := getFullFilePath(config.Config.Web.SrcDirectory + "/" + renderConfig.File)
+    updateRouteToFileMap(c.Request.URL.Path, filePath)
     cachedBuild, ok := checkForCachedBuild(filePath)
     if !ok {
         var err error
-        cachedBuild, err = BuildFile(filePath, props)
+        var metafile string
+        cachedBuild, metafile, err = BuildFile(filePath, props)
         if err != nil {
-            c.String(500, err.Error())
+            c.HTML(500, "index.html", gin.H{
+                "src": template.JS(fmt.Sprintf("showError(`%s`)", err.Error())),
+            })
+            return
         }
+        updateFileToDependenciesMap(filePath, getDependenciesFromMetafile(metafile))
         cacheBuild(filePath, cachedBuild)
     }
     title := getTitle(renderConfig.MetaTags)
     delete(renderConfig.MetaTags, "title")
     c.HTML(http.StatusOK, "index.html", gin.H{
+        "route": c.Request.URL.Path,
         "title": title,
         "metaTags": getMetaTags(renderConfig.MetaTags),
         "ogMetaTags": getOGMetaTags(renderConfig.MetaTags),

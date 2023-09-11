@@ -29,8 +29,8 @@ func StartWatching() {
 				if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "-gossr-temporary"){
 					fmt.Println(event.Name)
 					fmt.Printf("EVENT! %#v\n", event)
-					go react_renderer.UpdateCacheOnFileChange(event.Name)
-					go BroadcastFileUpdateToClients()
+					parentFilePath := react_renderer.UpdateCacheOnFileChange(event.Name)
+					go BroadcastFileUpdateToClients(parentFilePath)
 				}
 			case err := <-watcher.Errors:
 				fmt.Println("ERROR", err)

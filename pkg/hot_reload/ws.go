@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
 	"github.com/gin-gonic/gin"
@@ -22,11 +21,15 @@ func Serve(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
+	_, clientRoute, err := ws.ReadMessage()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	err = ws.WriteMessage(1, []byte("Connected"))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	connectionID := uuid.New()
-	connectedClients[connectionID] = ws
+	connectedClients[string(clientRoute)] = append(connectedClients[string(clientRoute)], ws)
 }

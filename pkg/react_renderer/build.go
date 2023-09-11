@@ -1,7 +1,6 @@
 package react_renderer
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,20 +9,25 @@ import (
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
 )
 
-func BuildFile(filePath, props string) (CachedBuild, error){
+func BuildFile(filePath, props string) (CachedBuild, string, error){
     var cachedBuild CachedBuild
 	// Get the path of the renderer file
     newFilePath, err := makeRendererFile(filePath, props)
     if err != nil {
-        return cachedBuild, err
+        return cachedBuild, "", err
     }
+    // Get temporary directory
+    osCacheDir, _ := os.UserCacheDir()
+	outDir := filepath.Join(osCacheDir, "gossr")
+    // Build the file with esbuild
     result := esbuildApi.Build(esbuildApi.BuildOptions{
         EntryPoints:       []string{newFilePath},
         Bundle:            true,
         MinifyWhitespace:  true,
         MinifyIdentifiers: true,
         MinifySyntax:      true,
-        Outdir: "/Users/nwong/Code/go-ssr/.tmp",
+        Metafile:          true,
+        Outdir: outDir,
         Loader: map[string]esbuildApi.Loader{
             ".png": esbuildApi.LoaderDataURL,
             ".svg": esbuildApi.LoaderDataURL,
@@ -32,14 +36,14 @@ func BuildFile(filePath, props string) (CachedBuild, error){
             ".gif": esbuildApi.LoaderDataURL,
             ".bmp": esbuildApi.LoaderDataURL,
         },
-        // Outfile:  "/Users/nwong/Code/go-ssr/tmp/out.js",
     })
+    // Remove renderer file
     err = os.Remove(newFilePath)
     if err != nil {
-        return cachedBuild, err
+        return cachedBuild, "", err
     }
     if len(result.Errors) > 0 {
-        return cachedBuild, errors.New(result.Errors[0].Text)
+        return cachedBuild, "", fmt.Errorf("%s <br>in %s <br>at %s", result.Errors[0].Text, result.Errors[0].Location.File, result.Errors[0].Location.LineText)
     }
     cachedBuild.CompiledJS = string(result.OutputFiles[0].Contents)
     for _, file := range result.OutputFiles {
@@ -49,7 +53,7 @@ func BuildFile(filePath, props string) (CachedBuild, error){
         }
     }
 	// Return the compiled build
-    return cachedBuild, nil
+    return cachedBuild, result.Metafile, nil
 }
 
 // Creates a temporary file that imports the file to be rendered
