@@ -3,13 +3,15 @@ import { useState } from "react";
 // import * as ReactDOM from "react-dom";
 import Component from "./components/Component";
 import { IndexRouteProps } from "./generated";
-// import "../public/test.css";
+import "../public/test.css";
+import horseImg from "../public/horse.png";
 
 function Home({ initialCount, msg }: IndexRouteProps) {
   const [count, setCount] = useState(initialCount);
 
   return (
     <div className="App">
+      <img src={horseImg} height={100} width={150} />
       <Component />
       <div>
         <a href="https://reactjs.org" target="_blank"></a>

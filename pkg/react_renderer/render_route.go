@@ -29,14 +29,14 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
     }
     // Get the full path of the file
     filePath := config.Config.Web.SrcDirectory + "/" + renderConfig.File
-    compiledJS, ok := checkForCachedBuild(filePath)
+    cachedBuild, ok := checkForCachedBuild(filePath)
     if !ok {
         var err error
-        compiledJS, err = BuildFile(filePath, props)
+        cachedBuild, err = BuildFile(filePath, props)
         if err != nil {
             c.String(500, err.Error())
         }
-        cacheBuild(filePath, compiledJS)
+        cacheBuild(filePath, cachedBuild)
     }
     title := getTitle(renderConfig.MetaTags)
     delete(renderConfig.MetaTags, "title")
@@ -44,7 +44,8 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
         "title": title,
         "metaTags": getMetaTags(renderConfig.MetaTags),
         "ogMetaTags": getOGMetaTags(renderConfig.MetaTags),
-        "src": template.JS(compiledJS),
+        "src": template.JS(cachedBuild.CompiledJS),
+        "css": template.CSS(cachedBuild.CompiledCSS),
     })
 }
 

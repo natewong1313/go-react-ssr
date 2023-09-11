@@ -10,11 +10,12 @@ import (
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
 )
 
-func BuildFile(filePath, props string) (string, error){
+func BuildFile(filePath, props string) (CachedBuild, error){
+    var cachedBuild CachedBuild
 	// Get the path of the renderer file
     newFilePath, err := makeRendererFile(filePath, props)
     if err != nil {
-        return "", err
+        return cachedBuild, err
     }
     result := esbuildApi.Build(esbuildApi.BuildOptions{
         EntryPoints:       []string{newFilePath},
@@ -22,17 +23,33 @@ func BuildFile(filePath, props string) (string, error){
         MinifyWhitespace:  true,
         MinifyIdentifiers: true,
         MinifySyntax:      true,
-        // Outfile:  ".tmp/out.js",
+        Outdir: "/Users/nwong/Code/go-ssr/.tmp",
+        Loader: map[string]esbuildApi.Loader{
+            ".png": esbuildApi.LoaderDataURL,
+            ".svg": esbuildApi.LoaderDataURL,
+            ".jpg": esbuildApi.LoaderDataURL,
+            ".jpeg": esbuildApi.LoaderDataURL,
+            ".gif": esbuildApi.LoaderDataURL,
+            ".bmp": esbuildApi.LoaderDataURL,
+        },
+        // Outfile:  "/Users/nwong/Code/go-ssr/tmp/out.js",
     })
     err = os.Remove(newFilePath)
     if err != nil {
-        return "", err
+        return cachedBuild, err
     }
     if len(result.Errors) > 0 {
-        return "", errors.New(result.Errors[0].Text)
+        return cachedBuild, errors.New(result.Errors[0].Text)
     }
-	// Return the compiled Javascript
-    return string(result.OutputFiles[0].Contents), nil
+    cachedBuild.CompiledJS = string(result.OutputFiles[0].Contents)
+    for _, file := range result.OutputFiles {
+        if(strings.HasSuffix(string(file.Path), ".css")){
+            cachedBuild.CompiledCSS = string(file.Contents)
+            break
+        }
+    }
+	// Return the compiled build
+    return cachedBuild, nil
 }
 
 // Creates a temporary file that imports the file to be rendered

@@ -1,3 +1,5 @@
+import styles from "./Component.module.css";
+
 export default function Component() {
-  return <div className="test">Hello world</div>;
+  return <div className={styles.header}>Hello world</div>;
 }

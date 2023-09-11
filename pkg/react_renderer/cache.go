@@ -5,22 +5,30 @@ import (
 	"sync"
 )
 
-var cachedBuilds = make(map[string]string)
+type CachedBuild struct {
+	CompiledJS string
+	CompiledCSS string
+}
+
+var cachedBuilds = make(map[string]CachedBuild)
 var cachedBuildsLock = sync.RWMutex{}
 
-func checkForCachedBuild(filePath string) (string, bool) {
+// Find a cached build for the given file path
+func checkForCachedBuild(filePath string) (CachedBuild, bool) {
 	cachedBuildsLock.RLock()
     defer cachedBuildsLock.RUnlock()
 	cachedBuild, ok := cachedBuilds[getFullFilePath(filePath)]
 	return cachedBuild, ok
 }
 
-func cacheBuild(filePath, build string) {
+// Add a build to the cache
+func cacheBuild(filePath string, cachedBuild CachedBuild) {
 	cachedBuildsLock.Lock()
     defer cachedBuildsLock.Unlock()
-	cachedBuilds[getFullFilePath(filePath)] = build
+	cachedBuilds[getFullFilePath(filePath)] = cachedBuild
 }
 
+// Remove a build from the cache
 func UpdateCacheOnFileChange(filePath string) {
 	cachedBuildsLock.Lock()
 	defer cachedBuildsLock.Unlock()
