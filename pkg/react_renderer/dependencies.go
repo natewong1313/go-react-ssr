@@ -14,7 +14,7 @@ var routeToFileMapLock = sync.RWMutex{}
 // Updates the RouteToFileMap with the new file path
 func updateRouteToFileMap(route, filePath string) {
 	routeToFileMapLock.Lock()
-    defer routeToFileMapLock.Unlock()
+	defer routeToFileMapLock.Unlock()
 	routeToFileMap[route] = filePath
 }
 
@@ -38,7 +38,7 @@ var fileToDependenciesMapLock = sync.RWMutex{}
 func getDependenciesFromMetafile(metafile string) []string {
 	var dependencies []string
 	jsonparser.ObjectEach([]byte(metafile), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
-		if(!strings.Contains(string(key), "/node_modules/")){
+		if !strings.Contains(string(key), "/node_modules/") {
 			fmt.Println("adding dep", getFullFilePath(string(key)))
 			dependencies = append(dependencies, getFullFilePath(string(key)))
 		}

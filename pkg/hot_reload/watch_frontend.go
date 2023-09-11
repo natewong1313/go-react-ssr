@@ -10,6 +10,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 )
+
 var watcher *fsnotify.Watcher
 
 // https://gist.github.com/sdomino/74980d69f9fa80cb9d73#file-watch_recursive-go
@@ -26,7 +27,7 @@ func StartWatching() {
 			select {
 			// watch for events
 			case event := <-watcher.Events:
-				if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "-gossr-temporary"){
+				if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "-gossr-temporary") {
 					fmt.Println(event.Name)
 					fmt.Printf("EVENT! %#v\n", event)
 					parentFilePath := react_renderer.UpdateCacheOnFileChange(event.Name)

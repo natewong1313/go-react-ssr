@@ -6,7 +6,7 @@ import (
 )
 
 type CachedBuild struct {
-	CompiledJS string
+	CompiledJS  string
 	CompiledCSS string
 }
 
@@ -16,7 +16,7 @@ var cachedBuildsLock = sync.RWMutex{}
 // Find a cached build for the given file path
 func checkForCachedBuild(filePath string) (CachedBuild, bool) {
 	cachedBuildsLock.RLock()
-    defer cachedBuildsLock.RUnlock()
+	defer cachedBuildsLock.RUnlock()
 	cachedBuild, ok := cachedBuilds[filePath]
 	return cachedBuild, ok
 }
@@ -24,7 +24,7 @@ func checkForCachedBuild(filePath string) (CachedBuild, bool) {
 // Add a build to the cache
 func cacheBuild(filePath string, cachedBuild CachedBuild) {
 	cachedBuildsLock.Lock()
-    defer cachedBuildsLock.Unlock()
+	defer cachedBuildsLock.Unlock()
 	cachedBuilds[filePath] = cachedBuild
 }
 
@@ -33,7 +33,7 @@ func UpdateCacheOnFileChange(filePath string) string {
 	filePath = getFullFilePath(filePath)
 	fmt.Println("Looking for", filePath)
 	filePathFoundInCache := deleteFromCache(filePath)
-	if !filePathFoundInCache{
+	if !filePathFoundInCache {
 		fmt.Println("Not found in cache")
 		filePath = getParentFilePathFromDependency(filePath)
 		fmt.Println("Looking for", filePath)

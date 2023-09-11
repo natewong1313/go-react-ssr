@@ -20,6 +20,7 @@ func createCacheFolder() (string, error) {
 
 	return cacheFolderPath, nil
 }
+
 // https://github.com/tkrajina/typescriptify-golang-structs/blob/master/tscriptify/main.go#L139
 func createTemporaryFile(folderPath string, structNames []string) (string, error) {
 	temporaryFilePath := filepath.Join(folderPath, "generator.go")
@@ -41,7 +42,7 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 
 	var params TemplateParams
 	params.Structs = structsArr
-	
+
 	params.ModelsPackage = getModelsPackageName()
 	params.Interface = true
 	params.TargetFile = config.Config.Web.GeneratedTypesPath
@@ -50,7 +51,7 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 	if err != nil {
 		return temporaryFilePath, err
 	}
-	
+
 	return temporaryFilePath, nil
 }
 
