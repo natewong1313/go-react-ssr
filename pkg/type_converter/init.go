@@ -1,7 +1,6 @@
 package type_converter
 
 import (
-	"fmt"
 	"os/exec"
 
 	_ "github.com/tkrajina/typescriptify-golang-structs/typescriptify"
@@ -25,9 +24,8 @@ func Init() error {
 	}
 	// Run the file
 	cmd := exec.Command("go", "run", temporaryFilePath)
-	output, err := cmd.CombinedOutput()
+	_, err = cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(string(output))
 		return err
 	}
 	return nil

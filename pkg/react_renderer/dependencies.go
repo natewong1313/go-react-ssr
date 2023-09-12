@@ -1,7 +1,6 @@
 package react_renderer
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 
@@ -39,7 +38,6 @@ func getDependenciesFromMetafile(metafile string) []string {
 	var dependencies []string
 	jsonparser.ObjectEach([]byte(metafile), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		if !strings.Contains(string(key), "/node_modules/") {
-			fmt.Println("adding dep", getFullFilePath(string(key)))
 			dependencies = append(dependencies, getFullFilePath(string(key)))
 		}
 		return nil
@@ -66,7 +64,6 @@ func getParentFilePathFromDependency(filePath string) string {
 	defer fileToDependenciesMapLock.RUnlock()
 	for parentFilePath, dependencies := range fileToDependenciesMap {
 		for _, dependency := range dependencies {
-			fmt.Println("Found dep", dependency)
 			if dependency == filePath {
 				return parentFilePath
 			}

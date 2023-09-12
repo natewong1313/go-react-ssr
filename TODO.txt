@@ -2,5 +2,5 @@
 - Config defaults
 - Use viper for config
 - logging
-- Rework how hot reload and cache work
-- Fix not hot reloading on css change
+- add tests
+- add link support

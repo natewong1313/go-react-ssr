@@ -4,6 +4,7 @@ import (
 	"gossr/api/router"
 	"gossr/config"
 	"gossr/pkg/hot_reload"
+	"gossr/pkg/log"
 	"gossr/pkg/type_converter"
 
 	"github.com/gin-gonic/gin"
@@ -17,12 +18,13 @@ func main() {
 
 	err = type_converter.Init()
 	if err != nil {
-		panic(err)
+		log.Logger.Fatal(err)
 	}
 
 	hot_reload.StartWatching()
 
-	g := gin.Default()
+	g := gin.New()
+	g.Use(gin.Recovery())
 	g.SetTrustedProxies(nil)
 	// g.Static("/public", "./public")
 	// g.LoadHTMLGlob(config.Config.Web.PublicDirectory+"/*")

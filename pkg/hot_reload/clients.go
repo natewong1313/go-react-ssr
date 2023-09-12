@@ -1,8 +1,10 @@
 package hot_reload
 
 import (
+	"errors"
 	"fmt"
 	"gossr/pkg/react_renderer"
+	"syscall"
 
 	"github.com/gorilla/websocket"
 )
@@ -13,22 +15,13 @@ func BroadcastFileUpdateToClients(filePath string) {
 	fmt.Println("Broadcasting update to file", filePath)
 	routes := react_renderer.GetRoutesForFile(filePath)
 	for _, route := range routes {
-		for _, ws := range connectedClients[route] {
-			fmt.Println("OK")
+		for k, ws := range connectedClients[route] {
 			err := ws.WriteMessage(1, []byte("reload"))
 			if err != nil {
-				fmt.Println(err)
-				// if errors.Is(err, syscall.EPIPE) {
-				// 	// remove client
-				// 	for k, v := range connectedClients {
-				// 		if v == ws {
-				// 			delete(connectedClients, k)
-				// 			break
-				// 		}
-				// 	}
-				// }else {
-				// 	fmt.Println(err)
-				// }
+				if errors.Is(err, syscall.EPIPE) {
+					// remove client
+					connectedClients[route] = append(connectedClients[route][:k], connectedClients[route][k+1:]...)
+				}
 			}
 		}
 	}

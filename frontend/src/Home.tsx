@@ -11,6 +11,7 @@ function Home({ initialCount, msg }: IndexRouteProps) {
 
   return (
     <div className="App">
+      <h1 className="text-3xl font-bold underline">Hello world</h1>
       <img src={horseImg} height={100} width={150} />
       <Component />
       <div>
