@@ -2,13 +2,13 @@ package hot_reload
 
 import (
 	"fmt"
-	"gossr/config"
-	"gossr/pkg/react_renderer"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/natewong1313/go-react-ssr/config"
+	"github.com/natewong1313/go-react-ssr/pkg/react_renderer"
 )
 
 var watcher *fsnotify.Watcher

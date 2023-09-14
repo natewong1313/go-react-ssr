@@ -3,9 +3,10 @@ package react_renderer
 import (
 	"encoding/json"
 	"fmt"
-	"gossr/config"
 	"html/template"
 	"strings"
+
+	"github.com/natewong1313/go-react-ssr/config"
 
 	"github.com/gin-gonic/gin"
 )
@@ -54,14 +55,6 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
 		CSS:        template.CSS(cachedBuild.CompiledCSS),
 		Route:      c.Request.URL.Path,
 	}))
-	// c.HTML(http.StatusOK, "index.html", gin.H{
-	// 	"route":      c.Request.URL.Path,
-	// 	"title":      title,
-	// 	"metaTags":   getMetaTags(renderConfig.MetaTags),
-	// 	"ogMetaTags": getOGMetaTags(renderConfig.MetaTags),
-	// 	"src":        template.JS(cachedBuild.CompiledJS),
-	// 	"css":        template.CSS(cachedBuild.CompiledCSS),
-	// })
 }
 
 func getTitle(metaTags map[string]string) string {

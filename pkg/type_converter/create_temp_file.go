@@ -1,12 +1,13 @@
 package type_converter
 
 import (
-	"gossr/config"
 	"os"
 	"path/filepath"
 	"runtime/debug"
 	"strings"
 	"text/template"
+
+	"github.com/natewong1313/go-react-ssr/pkg/config"
 )
 
 func createCacheFolder() (string, error) {
@@ -22,7 +23,7 @@ func createCacheFolder() (string, error) {
 }
 
 // https://github.com/tkrajina/typescriptify-golang-structs/blob/master/tscriptify/main.go#L139
-func createTemporaryFile(folderPath string, structNames []string) (string, error) {
+func createTemporaryFile(cfg *config.Config, folderPath string, structNames []string) (string, error) {
 	temporaryFilePath := filepath.Join(folderPath, "generator.go")
 	file, err := os.Create(temporaryFilePath)
 	if err != nil {
@@ -45,7 +46,7 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 
 	params.ModelsPackage = getModelsPackageName()
 	params.Interface = true
-	params.TargetFile = config.Config.Web.GeneratedTypesPath
+	params.TargetFile = cfg.GeneratedTypesPath
 
 	err = t.Execute(file, params)
 	if err != nil {

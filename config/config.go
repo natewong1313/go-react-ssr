@@ -8,7 +8,6 @@ import (
 
 type config struct {
 	Web struct {
-		PublicDirectory    string `yaml:"public-dir"`
 		SrcDirectory       string `yaml:"src-dir"`
 		GeneratedTypesPath string `yaml:"generated-types-path"`
 	} `yaml:"frontend"`
