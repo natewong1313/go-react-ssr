@@ -5,7 +5,7 @@ import "strings"
 const TEMPLATE = `package main
 
 import (
-	m "{{ .ModelsPackage }}"
+	m "{{ .ModuleName }}"
 	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 
@@ -24,7 +24,7 @@ func main() {
 }`
 
 type TemplateParams struct {
-	ModelsPackage string
+	ModuleName    string
 	TargetFile    string
 	Structs       []string
 	InitParams    map[string]interface{}

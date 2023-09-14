@@ -3,9 +3,10 @@ package react_renderer
 import (
 	"encoding/json"
 	"fmt"
-	"gossr/config"
 	"html/template"
 	"strings"
+
+	"github.com/natewong1313/go-react-ssr/pkg/config"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +29,7 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
 		props = string(propsJSON)
 	}
 	// Get the full path of the file
-	filePath := getFullFilePath(config.Config.Web.SrcDirectory + "/" + renderConfig.File)
+	filePath := getFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)
 	updateRouteToFileMap(c.Request.URL.Path, filePath)
 	cachedBuild, ok := checkForCachedBuild(filePath)
 	if !ok {
@@ -54,14 +55,6 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
 		CSS:        template.CSS(cachedBuild.CompiledCSS),
 		Route:      c.Request.URL.Path,
 	}))
-	// c.HTML(http.StatusOK, "index.html", gin.H{
-	// 	"route":      c.Request.URL.Path,
-	// 	"title":      title,
-	// 	"metaTags":   getMetaTags(renderConfig.MetaTags),
-	// 	"ogMetaTags": getOGMetaTags(renderConfig.MetaTags),
-	// 	"src":        template.JS(cachedBuild.CompiledJS),
-	// 	"css":        template.CSS(cachedBuild.CompiledCSS),
-	// })
 }
 
 func getTitle(metaTags map[string]string) string {

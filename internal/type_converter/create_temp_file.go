@@ -1,12 +1,14 @@
 package type_converter
 
 import (
-	"gossr/config"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 	"text/template"
+
+	"github.com/natewong1313/go-react-ssr/internal/utils"
+	"github.com/natewong1313/go-react-ssr/pkg/config"
 )
 
 func createCacheFolder() (string, error) {
@@ -43,9 +45,12 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 	var params TemplateParams
 	params.Structs = structsArr
 
-	params.ModelsPackage = getModelsPackageName()
+	params.ModuleName, err = getModuleName(config.C.PropsStructsPath)
+	if err != nil {
+		return temporaryFilePath, err
+	}
 	params.Interface = true
-	params.TargetFile = config.Config.Web.GeneratedTypesPath
+	params.TargetFile = utils.GetFullFilePath(config.C.GeneratedTypesPath)
 
 	err = t.Execute(file, params)
 	if err != nil {
@@ -55,10 +60,13 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 	return temporaryFilePath, nil
 }
 
-func getModelsPackageName() string {
-	buildInfo, _ := debug.ReadBuildInfo()
-	if buildInfo == nil {
-		return ""
+func getModuleName(propsStructsPath string) (string, error) {
+	dir := filepath.Dir(utils.GetFullFilePath(propsStructsPath))
+	cmd := exec.Command("go", "list")
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
 	}
-	return buildInfo.Main.Path + "/api/models"
+	return strings.TrimSpace(string(output)), nil
 }

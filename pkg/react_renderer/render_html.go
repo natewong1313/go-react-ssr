@@ -38,7 +38,7 @@ const HTML_TEMPLATE = `<!DOCTYPE html>
 	  }
 	</script>
 	<script>
-	  let socket = new WebSocket("ws://127.0.0.1:8080/ws/hotreload");
+	  let socket = new WebSocket("ws://127.0.0.1:3001/ws");
 	  socket.onopen = () => {
 		socket.send({{ .Route }});
 	  };
