@@ -2,18 +2,9 @@ package hot_reload
 
 import (
 	"fmt"
-	"net/http"
-
-	"github.com/gorilla/websocket"
 
 	"github.com/gin-gonic/gin"
 )
-
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
 
 func Serve(c *gin.Context) {
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)

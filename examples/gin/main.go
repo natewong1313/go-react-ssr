@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	g := gin.New()
+	g := gin.Default()
 	go_ssr.Init(config.Config{
 		FrontendDir:        "./frontend/src",
 		GeneratedTypesPath: "./frontend/src/generated.d.ts",
