@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/natewong1313/go-react-ssr/config"
+	"github.com/natewong1313/go-react-ssr/pkg/config"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +29,7 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
 		props = string(propsJSON)
 	}
 	// Get the full path of the file
-	filePath := getFullFilePath(config.Config.Web.SrcDirectory + "/" + renderConfig.File)
+	filePath := getFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)
 	updateRouteToFileMap(c.Request.URL.Path, filePath)
 	cachedBuild, ok := checkForCachedBuild(filePath)
 	if !ok {

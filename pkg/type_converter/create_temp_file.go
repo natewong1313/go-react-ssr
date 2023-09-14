@@ -2,11 +2,12 @@ package type_converter
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 	"text/template"
 
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"github.com/natewong1313/go-react-ssr/pkg/config"
 )
 
@@ -23,7 +24,7 @@ func createCacheFolder() (string, error) {
 }
 
 // https://github.com/tkrajina/typescriptify-golang-structs/blob/master/tscriptify/main.go#L139
-func createTemporaryFile(cfg *config.Config, folderPath string, structNames []string) (string, error) {
+func createTemporaryFile(cfg config.Config, folderPath string, structNames []string) (string, error) {
 	temporaryFilePath := filepath.Join(folderPath, "generator.go")
 	file, err := os.Create(temporaryFilePath)
 	if err != nil {
@@ -44,9 +45,12 @@ func createTemporaryFile(cfg *config.Config, folderPath string, structNames []st
 	var params TemplateParams
 	params.Structs = structsArr
 
-	params.ModelsPackage = getModelsPackageName()
+	params.ModuleName, err = getModuleName(cfg.PropsStructsPath)
+	if err != nil {
+		return temporaryFilePath, err
+	}
 	params.Interface = true
-	params.TargetFile = cfg.GeneratedTypesPath
+	params.TargetFile = utils.GetFullFilePath(cfg.GeneratedTypesPath)
 
 	err = t.Execute(file, params)
 	if err != nil {
@@ -56,10 +60,13 @@ func createTemporaryFile(cfg *config.Config, folderPath string, structNames []st
 	return temporaryFilePath, nil
 }
 
-func getModelsPackageName() string {
-	buildInfo, _ := debug.ReadBuildInfo()
-	if buildInfo == nil {
-		return ""
+func getModuleName(propsStructsPath string) (string, error) {
+	dir := filepath.Dir(utils.GetFullFilePath(propsStructsPath))
+	cmd := exec.Command("go", "list")
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
 	}
-	return buildInfo.Main.Path + "/api/models"
+	return strings.TrimSpace(string(output)), nil
 }

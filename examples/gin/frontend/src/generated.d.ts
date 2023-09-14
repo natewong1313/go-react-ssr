@@ -5,6 +5,3 @@ export interface IndexRouteProps {
     initialCount: number;
     msg: string;
 }
-export interface TestProps {
-
-}

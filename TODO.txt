@@ -1,6 +1,5 @@
 - SSG
 - Config defaults
-- Use viper for config
 - logging
 - add tests
 - add link support

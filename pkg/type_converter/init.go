@@ -8,7 +8,7 @@ import (
 	_ "github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 
-func Init(cfg *config.Config) error {
+func Init(cfg config.Config) error {
 	// Get struct names from file
 	structNames, err := getStructNamesFromFile(cfg.PropsStructsPath)
 	if err != nil {
