@@ -13,7 +13,7 @@ const HTML_TEMPLATE = `<!DOCTYPE html>
 	<title>{{ .Title }}</title>
 	{{range $k, $v := .MetaTags}} <meta name="{{$k}}" content="{{$v}}" /> {{end}}
 	{{range $k, $v := .OGMetaTags}} <meta property="{{$k}}" content="{{$v}}" /> {{end}}
-	<link rel="icon" type="image/svg+xml" href="/react.svg" />
+	<link rel="icon" href="/favicon.ico" />
   </head>
   <body>
 	<div id="root"></div>
