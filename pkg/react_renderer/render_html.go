@@ -11,11 +11,8 @@ const HTML_TEMPLATE = `<!DOCTYPE html>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>{{ .Title }}</title>
-	{{range $k, $v := .MetaTags}}
-	<meta name="{{$k}}" content="{{$v}}" />
-	{{end}} {{range $k, $v := .OGMetaTags}}
-	<meta property="{{$k}}" content="{{$v}}" />
-	{{end}}
+	{{range $k, $v := .MetaTags}} <meta name="{{$k}}" content="{{$v}}" /> {{end}}
+	{{range $k, $v := .OGMetaTags}} <meta property="{{$k}}" content="{{$v}}" /> {{end}}
 	<link rel="icon" type="image/svg+xml" href="/react.svg" />
   </head>
   <body>
@@ -27,7 +24,7 @@ const HTML_TEMPLATE = `<!DOCTYPE html>
 	  function showError(error) {
 		document.getElementById(
 		  "root"
-		).innerHTML = '<div style="font-family: Helvetica; padding: 4px 16px"> <h1>An error occured</h1> <p style="color: red">${error}</p> </div>';
+		).innerHTML = '<div style="font-family: Helvetica; padding: 4px 16px"> <h1>An error occured</h1> <p style="color: red">'+error+'</p> </div>';
 	  }
 	</script>
 	<script type="module">

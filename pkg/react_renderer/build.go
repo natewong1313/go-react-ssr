@@ -23,9 +23,9 @@ func BuildFile(filePath, props string) (CachedBuild, string, error) {
 	result := esbuildApi.Build(esbuildApi.BuildOptions{
 		EntryPoints:       []string{newFilePath},
 		Bundle:            true,
-		MinifyWhitespace:  true,
-		MinifyIdentifiers: true,
-		MinifySyntax:      true,
+		MinifyWhitespace:  os.Getenv("APP_ENV") == "production",
+		MinifyIdentifiers: os.Getenv("APP_ENV") == "production",
+		MinifySyntax:      os.Getenv("APP_ENV") == "production",
 		Metafile:          true,
 		Outdir:            outDir,
 		Loader: map[string]esbuildApi.Loader{

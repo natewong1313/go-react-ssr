@@ -2,10 +2,10 @@ package react_renderer
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"strings"
 
+	"github.com/natewong1313/go-react-ssr/internal/logger"
 	"github.com/natewong1313/go-react-ssr/pkg/config"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +13,7 @@ import (
 
 type Config struct {
 	File     string
+	Title    string
 	MetaTags map[string]string
 	Props    interface{}
 }
@@ -23,6 +24,7 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
 	if renderConfig.Props != nil {
 		propsJSON, err := json.Marshal(renderConfig.Props)
 		if err != nil {
+			logger.L.Error().Err(err).Msg("Failed to convert props to JSON")
 			c.JSON(500, gin.H{"error": "Invalid prop types"})
 			return
 		}
@@ -37,32 +39,21 @@ func RenderRoute(c *gin.Context, renderConfig Config) {
 		var metafile string
 		cachedBuild, metafile, err = BuildFile(filePath, props)
 		if err != nil {
-			c.HTML(500, "index.html", gin.H{
-				"src": template.JS(fmt.Sprintf("showError(`%s`)", err.Error())),
-			})
+			logger.L.Error().Err(err).Msg("Error occured building file")
+			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
 		updateFileToDependenciesMap(filePath, getDependenciesFromMetafile(metafile))
 		cacheBuild(filePath, cachedBuild)
 	}
-	title := getTitle(renderConfig.MetaTags)
-	delete(renderConfig.MetaTags, "title")
 	c.Writer.Write(renderHTMLString(HTMLParams{
-		Title:      title,
+		Title:      renderConfig.Title,
 		MetaTags:   getMetaTags(renderConfig.MetaTags),
 		OGMetaTags: getOGMetaTags(renderConfig.MetaTags),
 		JS:         template.JS(cachedBuild.CompiledJS),
 		CSS:        template.CSS(cachedBuild.CompiledCSS),
 		Route:      c.Request.URL.Path,
 	}))
-}
-
-func getTitle(metaTags map[string]string) string {
-	title, ok := metaTags["title"]
-	if ok {
-		return title
-	}
-	return "Go SSR App"
 }
 
 func getMetaTags(metaTags map[string]string) map[string]string {

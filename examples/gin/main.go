@@ -17,31 +17,18 @@ func main() {
 		PropsStructsPath:   "./models/props.go",
 	})
 
-	// props := models.IndexRouteProps{
-	// 	InitialCount: 0,
-	// 	Message:      "Hello from Go SSR!",
-	// }
 	g.GET("/", func(c *gin.Context) {
 		react_renderer.RenderRoute(c, react_renderer.Config{
-			File: "Home.tsx",
+			File:  "Home.tsx",
+			Title: "Gin example app",
 			MetaTags: map[string]string{
-				"title":       "My app",
-				"og:title":    "My app",
+				"og:title":    "Gin example app",
 				"description": "Hello world!",
 			},
 			Props: &models.IndexRouteProps{
 				InitialCount: 0,
-				Message:      "Hello from Go SSR!",
 			},
 		})
 	})
 	g.Run()
 }
-
-// func testFunc(props interface{}) {
-// 	converter := typescriptify.New().Add(props)
-// 	err := converter.ConvertToFile("models.ts")
-// 	if err != nil {
-// 		panic(err.Error())
-// 	}
-// }

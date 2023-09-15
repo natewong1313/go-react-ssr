@@ -1,12 +1,12 @@
 package hot_reload
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/natewong1313/go-react-ssr/internal/logger"
 	"github.com/natewong1313/go-react-ssr/pkg/config"
 	"github.com/natewong1313/go-react-ssr/pkg/react_renderer"
 )
@@ -20,20 +20,19 @@ func WatchForFileChanges() {
 	defer watcher.Close()
 
 	if err := filepath.Walk(config.C.FrontendDir, watchFilesInDir); err != nil {
-		fmt.Println("ERROR", err)
+		logger.L.Error().Err(err).Msg("Failed to add files in directory to watcher")
 	}
 	for {
 		select {
 		// Watch for file changes
 		case event := <-watcher.Events:
 			if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "-gossr-temporary") {
-				fmt.Println(event.Name)
-				fmt.Printf("EVENT! %#v\n", event)
+				logger.L.Info().Msgf("File changed: %s, reloading", event.Name)
 				parentFilePath := react_renderer.UpdateCacheOnFileChange(event.Name)
 				go BroadcastFileUpdateToClients(parentFilePath)
 			}
 		case err := <-watcher.Errors:
-			fmt.Println("ERROR", err)
+			logger.L.Error().Err(err).Msg("Error watching file")
 		}
 	}
 }

@@ -3,5 +3,4 @@
 
 export interface IndexRouteProps {
     initialCount: number;
-    msg: string;
 }

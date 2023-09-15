@@ -1,8 +1,9 @@
 package react_renderer
 
 import (
-	"fmt"
 	"sync"
+
+	"github.com/natewong1313/go-react-ssr/internal/logger"
 )
 
 type CachedBuild struct {
@@ -23,6 +24,7 @@ func checkForCachedBuild(filePath string) (CachedBuild, bool) {
 
 // Add a build to the cache
 func cacheBuild(filePath string, cachedBuild CachedBuild) {
+	logger.L.Debug().Msgf("Caching build for %s", filePath)
 	cachedBuildsLock.Lock()
 	defer cachedBuildsLock.Unlock()
 	cachedBuilds[filePath] = cachedBuild
@@ -31,12 +33,9 @@ func cacheBuild(filePath string, cachedBuild CachedBuild) {
 // Remove a build from the cache
 func UpdateCacheOnFileChange(filePath string) string {
 	filePath = getFullFilePath(filePath)
-	fmt.Println("Looking for", filePath)
 	filePathFoundInCache := deleteFromCache(filePath)
 	if !filePathFoundInCache {
-		fmt.Println("Not found in cache")
 		filePath = getParentFilePathFromDependency(filePath)
-		fmt.Println("Looking for", filePath)
 		deleteFromCache(filePath)
 	}
 	return filePath

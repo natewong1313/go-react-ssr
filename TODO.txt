@@ -1,5 +1,3 @@
 - SSG
-- logging
 - add tests
 - add link support
-- switch to only using global config

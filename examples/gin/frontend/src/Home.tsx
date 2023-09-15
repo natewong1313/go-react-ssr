@@ -1,32 +1,26 @@
 import { useState } from "react";
-// import * as React from "react";
-// import * as ReactDOM from "react-dom";
-import Component from "./components/Component";
 import { IndexRouteProps } from "./generated";
-import "./test.css";
-import horseImg from "../public/horse.png";
+import GoLogo from "../public/go.png";
+import ReactLogo from "../public/react.png";
+import "./Home.css";
+import Counter from "./components/Counter";
 
-function Home({ initialCount, msg }: IndexRouteProps) {
+function Home({ initialCount }: IndexRouteProps) {
   const [count, setCount] = useState(initialCount);
 
   return (
-    <div className="App">
-      <h1 className="text-3xl font-bold underline">Hello world</h1>
-      <img src={horseImg} height={100} width={150} />
-      <Component />
-      <div>
-        <a href="https://reactjs.org" target="_blank"></a>
+    <div className="home">
+      <div className="img-container">
+        <img src={GoLogo} alt="Go logo" height={70} width={170} />
+        <img src={ReactLogo} alt="React logo" height={80} width={90} />
       </div>
-      <h1>React + Go!</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <h1>Go + React</h1>
+      <div className="counter-container">
+        <Counter count={count} increment={() => setCount(count + 1)} />
       </div>
-      <p className="read-the-docs">{msg}</p>
+      <a href="https://github.com/natewong1313/go-react-ssr" target="_blank">
+        View project on GitHub
+      </a>
     </div>
   );
 }
