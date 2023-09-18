@@ -45,6 +45,7 @@ func getConfig(optionalCfg []config.Config) (cfg *config.Config) {
 	if len(optionalCfg) > 0 {
 		cfg = &optionalCfg[0]
 	} else {
+		logger.L.Info().Msg("No config provided, using defaults")
 		cfg = &config.Config{}
 	}
 	return cfg

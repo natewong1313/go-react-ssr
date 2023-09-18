@@ -1,12 +1,10 @@
 module examples/gin
 
-replace github.com/natewong1313/go-react-ssr => ../../
-
 go 1.21.0
 
 require (
 	github.com/gin-gonic/gin v1.9.1
-	github.com/natewong1313/go-react-ssr v0.0.0-00010101000000-000000000000
+	github.com/natewong1313/go-react-ssr v0.0.1
 )
 
 require (
