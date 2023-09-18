@@ -1,7 +1,7 @@
 package main
 
 import (
-	"examples/gin/models"
+	"example.com/gin/models"
 
 	"github.com/gin-gonic/gin"
 	go_ssr "github.com/natewong1313/go-react-ssr"

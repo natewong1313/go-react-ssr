@@ -1,4 +1,4 @@
-module examples/gin
+module example.com/gin
 
 go 1.21.0
 
