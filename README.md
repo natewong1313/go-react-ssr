@@ -19,30 +19,29 @@ Go-SSR is a drop in plugin to **any** existing Go web framework to allow **serve
 package main
 
 import (
-	"example.com/gin/models"
-
-	"github.com/gin-gonic/gin"
-	go_ssr "github.com/natewong1313/go-react-ssr"
-	"github.com/natewong1313/go-react-ssr/pkg/config"
-	"github.com/natewong1313/go-react-ssr/pkg/react_renderer"
+  "example.com/gin/models"
+  "github.com/gin-gonic/gin"
+  go_ssr "github.com/natewong1313/go-react-ssr"
+  "github.com/natewong1313/go-react-ssr/pkg/config"
+  "github.com/natewong1313/go-react-ssr/pkg/react_renderer"
 )
 
 func main() {
-	g := gin.Default()
+  g := gin.Default()
 
-	go_ssr.Init(config.Config{
-		PropsStructsPath:   "./models/props.go",
-	})
+  go_ssr.Init(config.Config{
+    PropsStructsPath:  "./models/props.go",
+  })
 
-	g.GET("/", func(c *gin.Context) {
-		react_renderer.RenderRoute(c, react_renderer.Config{
-			File:  "Home.tsx",
-			Props: &models.IndexRouteProps{
-				InitialCount: 0,
-			},
-		})
-	})
-	g.Run()
+  g.GET("/", func(c *gin.Context) {
+    react_renderer.RenderRoute(c, react_renderer.Config{
+      File:  "Home.tsx",
+      Props: &models.IndexRouteProps{
+        InitialCount: 0,
+      },
+    })
+  })
+  g.Run()
 }
 
 
