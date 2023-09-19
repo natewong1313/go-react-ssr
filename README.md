@@ -43,6 +43,14 @@ func main() {
   })
   g.Run()
 }
+```
 
+# Installation
 
+### Installing Go-SSR
+
+To install Go-SSR to an existing Go project, run the following Go command
+
+```bash
+$ go get -u github.com/natewong1313/go-react-ssr
 ```
