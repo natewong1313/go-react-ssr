@@ -3,7 +3,7 @@ package type_converter
 import (
 	"os/exec"
 
-	"github.com/natewong1313/go-react-ssr/pkg/config"
+	"github.com/natewong1313/go-react-ssr/config"
 	_ "github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 

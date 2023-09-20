@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/logger"
-	"github.com/natewong1313/go-react-ssr/pkg/config"
-	"github.com/natewong1313/go-react-ssr/pkg/react_renderer"
+	"github.com/natewong1313/go-react-ssr/react_renderer"
 )
 
 var watcher *fsnotify.Watcher

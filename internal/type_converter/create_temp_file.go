@@ -7,8 +7,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
-	"github.com/natewong1313/go-react-ssr/pkg/config"
 )
 
 func createCacheFolder() (string, error) {

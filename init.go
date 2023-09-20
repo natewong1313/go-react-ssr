@@ -5,10 +5,10 @@ import (
 
 	"github.com/creasty/defaults"
 	"github.com/joho/godotenv"
+	"github.com/natewong1313/go-react-ssr/config"
+	"github.com/natewong1313/go-react-ssr/internal/hot_reload"
 	"github.com/natewong1313/go-react-ssr/internal/logger"
 	"github.com/natewong1313/go-react-ssr/internal/type_converter"
-	"github.com/natewong1313/go-react-ssr/pkg/config"
-	"github.com/natewong1313/go-react-ssr/pkg/hot_reload"
 )
 
 func Init(optionalCfg ...config.Config) {

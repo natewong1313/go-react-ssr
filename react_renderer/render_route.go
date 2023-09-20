@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/logger"
-	"github.com/natewong1313/go-react-ssr/pkg/config"
 )
 
 type Config struct {

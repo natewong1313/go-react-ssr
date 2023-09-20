@@ -2,7 +2,7 @@ package hot_reload
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/natewong1313/go-react-ssr/pkg/react_renderer"
+	"github.com/natewong1313/go-react-ssr/react_renderer"
 )
 
 var connectedClients = make(map[string][]*websocket.Conn)

@@ -64,8 +64,8 @@ Then, add imports into your main file
 import (
 	...
 	go_ssr "github.com/natewong1313/go-react-ssr"
-	"github.com/natewong1313/go-react-ssr/pkg/config"
-	"github.com/natewong1313/go-react-ssr/pkg/react_renderer"
+	"github.com/natewong1313/go-react-ssr/config"
+	"github.com/natewong1313/go-react-ssr/react_renderer"
 )
 ```
 
