@@ -14,7 +14,7 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 	app.Use(favicon.New(favicon.Config{
-		File: "./assets/favicon.ico",
+		File: "./frontend/public/favicon.ico",
 		URL:  "/favicon.ico",
 	}))
 
