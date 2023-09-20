@@ -2,60 +2,13 @@ package react_renderer
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
+	"os"
+	"runtime"
+
+	"github.com/natewong1313/go-react-ssr/internal/templates"
 )
-
-const HTML_TEMPLATE = `<!DOCTYPE html>
-<html>
-  <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>{{ .Title }}</title>
-	{{range $k, $v := .MetaTags}} <meta name="{{$k}}" content="{{$v}}" /> {{end}}
-	{{range $k, $v := .OGMetaTags}} <meta property="{{$k}}" content="{{$v}}" /> {{end}}
-	<link rel="icon" href="/favicon.ico" />
-  </head>
-  <body>
-	<div id="root"></div>
-	<style>
-	  {{ .CSS }}}
-	</style>
-	<script>
-	  function showError(error) {
-		document.getElementById(
-		  "root"
-		).innerHTML = '<div style="font-family: Helvetica; padding: 4px 16px"> <h1>An error occured</h1> <p style="color: red">'+error+'</p> </div>';
-	  }
-	</script>
-	<script type="module">
-	  try{
-		{{ .JS }}
-	  } catch (e) {
-		showError(e.stack)
-	  }
-	</script>
-	<script>
-	  let socket = new WebSocket("ws://127.0.0.1:3001/ws");
-	  socket.onopen = () => {
-		socket.send({{ .Route }});
-	  };
-
-	  socket.onmessage = (event) => {
-		if (event.data === "reload") {
-		  console.log("Change detected, reloading...");
-		  window.location.reload();
-		}
-	  };
-
-	  // socket.onclose = (event) => {
-	  //   socket.send("Client Closed!");
-	  // };
-
-	  // socket.onerror = (error) => {};
-	</script>
-  </body>
-</html>
-`
 
 type HTMLParams struct {
 	Title      string
@@ -63,12 +16,28 @@ type HTMLParams struct {
 	OGMetaTags map[string]string
 	JS         template.JS
 	CSS        template.CSS
-	Route      string
+	RouteID    string
+	IsDev      bool
+}
+
+type ErrorParams struct {
+	Error string
 }
 
 func renderHTMLString(params HTMLParams) []byte {
-	t := template.Must(template.New("").Parse(HTML_TEMPLATE))
+	params.IsDev = os.Getenv("APP_ENV") != "production"
+	t := template.Must(template.New("").Parse(templates.HTML_TEMPLATE))
 	var output bytes.Buffer
 	t.Execute(&output, params)
+	return output.Bytes()
+}
+
+func renderErrorHTMLString(err error) []byte {
+	t := template.Must(template.New("").Parse(templates.ERROR_TEMPLATE))
+	var output bytes.Buffer
+	_, filename, line, _ := runtime.Caller(1)
+	t.Execute(&output, ErrorParams{
+		Error: fmt.Sprintf("%s line %d: %v", filename, line, err),
+	})
 	return output.Bytes()
 }

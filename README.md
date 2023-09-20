@@ -13,44 +13,81 @@
 
 Go-SSR is a drop in plugin to **any** existing Go web framework to allow **server rendering** [React](https://react.dev/). It's powered by [esbuild](https://esbuild.github.io/) and allows for passing props from Go to React with **type safety**.
 
-# Quickstart
+# 📜 Features
 
-```go
-package main
+- Lightning fast compiling
+- Auto generated Typescript structs for props
+- Smart build caching system
+- Hot reloading
+- Simple error reporting
+- Production optimized
+- Drop in to any existing Go web server
 
-import (
-  "example.com/gin/models"
-  "github.com/gin-gonic/gin"
-  go_ssr "github.com/natewong1313/go-react-ssr"
-  "github.com/natewong1313/go-react-ssr/pkg/config"
-  "github.com/natewong1313/go-react-ssr/pkg/react_renderer"
-)
+<!-- _View more examples [here](github.com/natewong1313/go-react-ssr/examples)_ -->
 
-func main() {
-  g := gin.Default()
+# 🛠️ Getting Started
 
-  go_ssr.Init(config.Config{
-    PropsStructsPath:  "./models/props.go",
-  })
+Go-SSR can either be installed by cloning a template or simply installing it on your own. It is reccomended to take a look at the [examples](/examples/README.md) folder to see how projects are structured.
 
-  g.GET("/", func(c *gin.Context) {
-    react_renderer.RenderRoute(c, react_renderer.Config{
-      File:  "Home.tsx",
-      Props: &models.IndexRouteProps{
-        InitialCount: 0,
-      },
-    })
-  })
-  g.Run()
-}
+## ⚡️ Using pre-configured templates
+
+Templates have been pre-configured to be installed from the console using the [`gonew`](https://go.dev/blog/gonew) command. View more info in the [examples](/examples/README.md) folder
+
+### Gin
+
+```console
+$ gonew github.com/natewong1313/go-react-ssr/examples/gin example.com/gin
 ```
 
-# Installation
+### Fiber
 
-### Installing Go-SSR
+```console
+$ gonew github.com/natewong1313/go-react-ssr/examples/fiber example.com/fiber
+```
 
-To install Go-SSR to an existing Go project, run the following Go command
+## 📝 Add to existing web server
 
-```bash
+First, install the module
+
+```console
 $ go get -u github.com/natewong1313/go-react-ssr
+```
+
+Then, add imports into your main file
+
+```go
+import (
+	...
+	go_ssr "github.com/natewong1313/go-react-ssr"
+	"github.com/natewong1313/go-react-ssr/pkg/config"
+	"github.com/natewong1313/go-react-ssr/pkg/react_renderer"
+)
+```
+
+In your main function, initialize the plugin
+
+```go
+go_ssr.Init(config.Config{
+	FrontendDir:        "./frontend/src", // The React source files path
+	GeneratedTypesPath: "./frontend/src/generated.d.ts", // Where the generated prop types will be created at
+	PropsStructsPath:   "./models/props.go", // Where the Go structs for your prop types are located
+})
+```
+
+Once the plugin has been initialized, you can call the `react_renderer.RenderRoute` function to compile your React file to a string
+
+```go
+g.GET("/", func(c *gin.Context) {
+	c.Writer.Write(react_renderer.RenderRoute(react_renderer.Config{
+		File:  "Home.tsx", // The file name, located in FrontendDir
+		Title: "My example app", // Set the app title
+		MetaTags: map[string]string{ // Configure meta tags
+			"og:title":    "My example app",
+			"description": "Example description",
+		},
+		Props: &models.IndexRouteProps{ // Pass in your props struct
+			InitialCount: 0,
+		},
+	}))
+})
 ```

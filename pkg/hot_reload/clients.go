@@ -8,13 +8,13 @@ import (
 var connectedClients = make(map[string][]*websocket.Conn)
 
 func BroadcastFileUpdateToClients(filePath string) {
-	routes := react_renderer.GetRoutesForFile(filePath)
-	for _, route := range routes {
-		for k, ws := range connectedClients[route] {
+	routeIDS := react_renderer.GetRouteIDSForFile(filePath)
+	for _, routeID := range routeIDS {
+		for k, ws := range connectedClients[routeID] {
 			err := ws.WriteMessage(1, []byte("reload"))
 			if err != nil {
 				// remove client
-				connectedClients[route] = append(connectedClients[route][:k], connectedClients[route][k+1:]...)
+				connectedClients[routeID] = append(connectedClients[routeID][:k], connectedClients[routeID][k+1:]...)
 			}
 		}
 	}

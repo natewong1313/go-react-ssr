@@ -7,22 +7,22 @@ import (
 	"github.com/buger/jsonparser"
 )
 
-var routeToFileMap = map[string]string{}
-var routeToFileMapLock = sync.RWMutex{}
+var routeIDToFileMap = map[string]string{}
+var routeIDToFileMapLock = sync.RWMutex{}
 
 // Updates the RouteToFileMap with the new file path
-func updateRouteToFileMap(route, filePath string) {
-	routeToFileMapLock.Lock()
-	defer routeToFileMapLock.Unlock()
-	routeToFileMap[route] = filePath
+func updateRouteToFileMap(routeID, filePath string) {
+	routeIDToFileMapLock.Lock()
+	defer routeIDToFileMapLock.Unlock()
+	routeIDToFileMap[routeID] = filePath
 }
 
 // Returns any routes that render a parent file
-func GetRoutesForFile(filePath string) []string {
-	routeToFileMapLock.RLock()
-	defer routeToFileMapLock.RUnlock()
+func GetRouteIDSForFile(filePath string) []string {
+	routeIDToFileMapLock.RLock()
+	defer routeIDToFileMapLock.RUnlock()
 	var routes []string
-	for route, file := range routeToFileMap {
+	for route, file := range routeIDToFileMap {
 		if file == filePath {
 			routes = append(routes, route)
 		}

@@ -19,7 +19,7 @@ func main() {
 	})
 
 	g.GET("/", func(c *gin.Context) {
-		react_renderer.RenderRoute(c, react_renderer.Config{
+		c.Writer.Write(react_renderer.RenderRoute(react_renderer.Config{
 			File:  "Home.tsx",
 			Title: "Gin example app",
 			MetaTags: map[string]string{
@@ -29,7 +29,7 @@ func main() {
 			Props: &models.IndexRouteProps{
 				InitialCount: 0,
 			},
-		})
+		}))
 	})
 	g.Run()
 }
