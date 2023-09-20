@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/gin-gonic/gin v1.9.1
-	github.com/natewong1313/go-react-ssr v0.0.2
+	github.com/natewong1313/go-react-ssr v0.0.3
 )
 
 require (

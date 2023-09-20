@@ -65,6 +65,8 @@ github.com/natewong1313/go-react-ssr v0.0.1 h1:25kXKrEkNTGUmuEq9O9YwnZcDYFjOx1ns
 github.com/natewong1313/go-react-ssr v0.0.1/go.mod h1:vFfr5rOZDI1xvL0kXiFuxSSqV4fDekMY6CoY4noPxNs=
 github.com/natewong1313/go-react-ssr v0.0.2 h1:HDQAwW7y1UKMy203EzGdo+fIAIo1AloBHTP64PY7qSs=
 github.com/natewong1313/go-react-ssr v0.0.2/go.mod h1:mNRYw/XYoE/BEdjDARW+dPqSMr9VE3xRlz7J3BUk1ZE=
+github.com/natewong1313/go-react-ssr v0.0.3 h1:fbcwVdAqR7qrtx9Ea8Od54zou1fzn9xEQXBpiqIXmoU=
+github.com/natewong1313/go-react-ssr v0.0.3/go.mod h1:mNRYw/XYoE/BEdjDARW+dPqSMr9VE3xRlz7J3BUk1ZE=
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
