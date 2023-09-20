@@ -13,6 +13,11 @@
 
 Go-SSR is a drop in plugin to **any** existing Go web framework to allow **server rendering** [React](https://react.dev/). It's powered by [esbuild](https://esbuild.github.io/) and allows for passing props from Go to React with **type safety**.
 
+<!--
+# 💡 Overview -->
+
+Go-SSR was developed due to a lack of an existing product in the Go ecosystem that made it easy to build full-stack React apps. At the time, most Go web app projects were either built with a static React frontend with lots of client-side logic or html templates. I envisioned creating a new solution that would allow you to create full-stack Go apps with React but with logic being moved to the server and being able to pass that logic down with type-safe props. This was inspired by [Remix](https://remix.run/) and [Next.JS](https://nextjs.org/)
+
 # 📜 Features
 
 - Lightning fast compiling
@@ -27,11 +32,11 @@ Go-SSR is a drop in plugin to **any** existing Go web framework to allow **serve
 
 # 🛠️ Getting Started
 
-Go-SSR can either be installed by cloning a template or simply installing it on your own. It is reccomended to take a look at the [examples](/examples/README.md) folder to see how projects are structured.
+Go-SSR can either be installed by cloning a template or simply installing it on your own. It is reccomended to take a look at the [examples](/examples) folder to see how projects are structured.
 
 ## ⚡️ Using pre-configured templates
 
-Templates have been pre-configured to be installed from the console using the [`gonew`](https://go.dev/blog/gonew) command. View more info in the [examples](/examples/README.md) folder
+Templates have been pre-configured to be installed from the console using the [`gonew`](https://go.dev/blog/gonew) command. View more info in the [examples](/examples) folder
 
 ### Gin
 
