@@ -41,12 +41,14 @@ Templates have been pre-configured to be installed from the console using the [`
 
 ```console
 $ gonew github.com/natewong1313/go-react-ssr/examples/gin example.com/gin
+$ cd gin && go get github.com/natewong1313/go-react-ssr@latest
 ```
 
 ### Fiber
 
 ```console
 $ gonew github.com/natewong1313/go-react-ssr/examples/fiber example.com/fiber
+$ cd fiber && go get github.com/natewong1313/go-react-ssr@latest
 ```
 
 ## 📝 Add to existing web server
