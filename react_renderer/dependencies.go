@@ -2,6 +2,8 @@ package react_renderer
 
 import (
 	"sync"
+
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
 // Stores the route IDS that render a specific file
@@ -55,7 +57,7 @@ func getParentFilesFromDependency(dependencyPath string) []string {
 // Takes in a file path and return any routeID's that either render the file
 // or the file they render imports that file as a dependency
 func GetRouteIDSWithFile(fileName string) []string {
-	filePath := getFullFilePath(fileName)
+	filePath := utils.GetFullFilePath(fileName)
 	reactFilesWithDependency := getParentFilesFromDependency(filePath)
 	if len(reactFilesWithDependency) == 0 {
 		reactFilesWithDependency = []string{filePath}

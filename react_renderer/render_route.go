@@ -9,6 +9,7 @@ import (
 
 	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/logger"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
 type Config struct {
@@ -30,7 +31,7 @@ func RenderRoute(renderConfig Config) []byte {
 		return renderErrorHTMLString(err)
 	}
 	// Get the full path of the react component file
-	reactFilePath := getFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)
+	reactFilePath := utils.GetFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)
 	// Update the routeID to file map
 	updateRouteIDToReactFileMap(routeID, reactFilePath)
 	// Use esbuild to build the react file

@@ -9,6 +9,7 @@ import (
 	"github.com/buger/jsonparser"
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
 	"github.com/natewong1313/go-react-ssr/config"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
 type Build struct {
@@ -63,7 +64,7 @@ func getDependencyPathsFromMetafile(metafile string) []string {
 	var dependencyPaths []string
 	jsonparser.ObjectEach([]byte(metafile), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		if !strings.Contains(string(key), "/node_modules/") {
-			dependencyPaths = append(dependencyPaths, getFullFilePath(string(key)))
+			dependencyPaths = append(dependencyPaths, utils.GetFullFilePath(string(key)))
 		}
 		return nil
 	}, "inputs")
