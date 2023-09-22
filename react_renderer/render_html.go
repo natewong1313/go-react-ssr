@@ -24,6 +24,7 @@ type ErrorParams struct {
 	Error string
 }
 
+// Renders the HTML template in internal/templates with the given parameters
 func renderHTMLString(params HTMLParams) []byte {
 	params.IsDev = os.Getenv("APP_ENV") != "production"
 	t := template.Must(template.New("").Parse(templates.HTML_TEMPLATE))
@@ -32,6 +33,7 @@ func renderHTMLString(params HTMLParams) []byte {
 	return output.Bytes()
 }
 
+// Renders the error template in internal/templates and passes the error message
 func renderErrorHTMLString(err error) []byte {
 	t := template.Must(template.New("").Parse(templates.ERROR_TEMPLATE))
 	var output bytes.Buffer
