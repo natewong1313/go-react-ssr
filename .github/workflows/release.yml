@@ -33,3 +33,4 @@ jobs:
         run: |
           OPERATOR_VERSION=$(git describe --tags)
           curl https://proxy.golang.org/github.com/natewong1313/go-react-ssr/@v/${OPERATOR_VERSION}.info
+          curl -X POST https://pkg.go.dev/fetch/github.com/natewong1313/go-react-ssr@${OPERATOR_VERSION}
