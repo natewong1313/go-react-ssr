@@ -30,6 +30,7 @@ func serve(w http.ResponseWriter, r *http.Request) {
 		logger.L.Error().Err(err).Msg("Failed to upgrade websocket")
 		return
 	}
+	// Client should send routeID as first message
 	_, routeID, err := ws.ReadMessage()
 	if err != nil {
 		logger.L.Error().Err(err).Msg("Failed to read message from websocket")
@@ -40,5 +41,6 @@ func serve(w http.ResponseWriter, r *http.Request) {
 		logger.L.Error().Err(err).Msg("Failed to write message to websocket")
 		return
 	}
+	// Add client to connectedClients
 	connectedClients[string(routeID)] = append(connectedClients[string(routeID)], ws)
 }

@@ -11,8 +11,13 @@ import (
 	"github.com/natewong1313/go-react-ssr/config"
 )
 
-func buildReactFile(routeID, reactFilePath, props string) (CachedBuild, []string, error) {
-	var cachedBuild CachedBuild
+type Build struct {
+	CompiledJS  string
+	CompiledCSS string
+}
+
+func buildReactFile(routeID, reactFilePath, props string) (Build, []string, error) {
+	var build Build
 	// Build with esbuild
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		// Build contents from a string rather than file
@@ -22,12 +27,12 @@ func buildReactFile(routeID, reactFilePath, props string) (CachedBuild, []string
 			ResolveDir: config.C.FrontendDir,
 		},
 		Bundle:            true,
-		MinifyWhitespace:  os.Getenv("APP_ENV") == "production",
+		MinifyWhitespace:  os.Getenv("APP_ENV") == "production", // Minify in production
 		MinifyIdentifiers: os.Getenv("APP_ENV") == "production",
 		MinifySyntax:      os.Getenv("APP_ENV") == "production",
 		Metafile:          true,
 		Outdir:            "/", // This is ignored because we are using the metafile
-		Loader: map[string]esbuildApi.Loader{
+		Loader: map[string]esbuildApi.Loader{ // for loading images properly
 			".png":  esbuildApi.LoaderDataURL,
 			".svg":  esbuildApi.LoaderDataURL,
 			".jpg":  esbuildApi.LoaderDataURL,
@@ -38,19 +43,19 @@ func buildReactFile(routeID, reactFilePath, props string) (CachedBuild, []string
 	})
 	if len(buildResult.Errors) > 0 {
 		// Return formatted error
-		return cachedBuild, nil, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
+		return build, nil, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
 	}
 	// First output file is the react build
-	cachedBuild.CompiledJS = string(buildResult.OutputFiles[0].Contents)
+	build.CompiledJS = string(buildResult.OutputFiles[0].Contents)
 	// Check for css file
 	for _, file := range buildResult.OutputFiles {
 		if strings.HasSuffix(string(file.Path), ".css") {
-			cachedBuild.CompiledCSS = string(file.Contents)
+			build.CompiledCSS = string(file.Contents)
 			break
 		}
 	}
 	// Return the compiled build
-	return cachedBuild, getDependencyPathsFromMetafile(buildResult.Metafile), nil
+	return build, getDependencyPathsFromMetafile(buildResult.Metafile), nil
 }
 
 // Parse dependencies from esbuild metafile

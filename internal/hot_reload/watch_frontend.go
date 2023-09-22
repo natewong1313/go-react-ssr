@@ -28,14 +28,12 @@ func WatchForFileChanges() {
 		case event := <-watcher.Events:
 			// Watch for file created, deleted, updated, or renamed events
 			if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "-gossr-temporary") {
-				logger.L.Info().Msgf("File changed: %s, reloading", event.Name)
-				// If the file that changed is just a dependency
-				// parentFilePath := react_renderer.UpdateCacheOnFileChange(event.Name)
-				// go BroadcastFileUpdateToClients(parentFilePath)
-				parentFilePaths := react_renderer.UpdateCacheOnFileChange(event.Name)
-				for _, parentFilePath := range parentFilePaths {
-					go BroadcastFileUpdateToClients(parentFilePath)
-				}
+				filePath := event.Name
+				logger.L.Info().Msgf("File changed: %s, reloading", filePath)
+				// Get all route ids that use that file or have it as a dependency
+				routeIDS := react_renderer.GetRouteIDSWithFile(filePath)
+				// Tell all browser clients listening for those route ids to reload
+				go BroadcastFileUpdateToClients(routeIDS)
 			}
 		case err := <-watcher.Errors:
 			logger.L.Error().Err(err).Msg("Error watching file")

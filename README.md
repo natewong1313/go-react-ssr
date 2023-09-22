@@ -22,7 +22,6 @@ Go-SSR was developed due to a lack of an existing product in the Go ecosystem th
 
 - Lightning fast compiling
 - Auto generated Typescript structs for props
-- Smart build caching system
 - Hot reloading
 - Simple error reporting
 - Production optimized

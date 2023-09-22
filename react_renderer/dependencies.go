@@ -1,89 +1,68 @@
 package react_renderer
 
 import (
-	"strings"
 	"sync"
-
-	"github.com/buger/jsonparser"
 )
 
-var routeIDToFileMap = map[string]string{}
-var routeIDToFileMapLock = sync.RWMutex{}
+// Stores the route IDS that render a specific file
+var routeIDToReactFileMap = map[string]string{}
+var routeIDToReactFileMapLock = sync.RWMutex{}
 
 // Updates the RouteToFileMap with the new file path
-func updateRouteToFileMap(routeID, filePath string) {
-	routeIDToFileMapLock.Lock()
-	defer routeIDToFileMapLock.Unlock()
-	routeIDToFileMap[routeID] = filePath
+func updateRouteIDToReactFileMap(routeID, reactFilePath string) {
+	routeIDToReactFileMapLock.Lock()
+	defer routeIDToReactFileMapLock.Unlock()
+	routeIDToReactFileMap[routeID] = reactFilePath
 }
 
 // Returns any routes that render a parent file
-func GetRouteIDSForFile(filePath string) []string {
-	routeIDToFileMapLock.RLock()
-	defer routeIDToFileMapLock.RUnlock()
+func GetRouteIDSForReactFile(reactFilePath string) []string {
+	routeIDToReactFileMapLock.RLock()
+	defer routeIDToReactFileMapLock.RUnlock()
 	var routes []string
-	for route, file := range routeIDToFileMap {
-		if file == filePath {
+	for route, filePath := range routeIDToReactFileMap {
+		if filePath == reactFilePath {
 			routes = append(routes, route)
 		}
 	}
 	return routes
 }
 
-var fileToDependenciesMap = map[string][]string{}
-var fileToDependenciesMapLock = sync.RWMutex{}
+// Store the react files and the depdenencies they import
+var parentFileToDependenciesMap = map[string][]string{}
+var parentFileToDependenciesMapLock = sync.RWMutex{}
 
-// Parse dependencies from esbuild metafile
-func getDependenciesFromMetafile(metafile string) []string {
-	var dependencies []string
-	jsonparser.ObjectEach([]byte(metafile), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
-		if !strings.Contains(string(key), "/node_modules/") {
-			dependencies = append(dependencies, getFullFilePath(string(key)))
-		}
-		return nil
-	}, "inputs")
-	return dependencies
+func updateParentFileDependencies(reactFilePath string, dependencies []string) {
+	parentFileToDependenciesMapLock.Lock()
+	defer parentFileToDependenciesMapLock.Unlock()
+	parentFileToDependenciesMap[reactFilePath] = dependencies
 }
 
-// Updates the FileToDependenciesMap with the new file path
-func updateFileToDependenciesMap(filePath string, dependencies []string) {
-	fileToDependenciesMapLock.Lock()
-	defer fileToDependenciesMapLock.Unlock()
-	fileToDependenciesMap[filePath] = dependencies
-}
-
-// Returns the dependencies for the given file path
-func GetDependencies(filePath string) []string {
-	fileToDependenciesMapLock.RLock()
-	defer fileToDependenciesMapLock.RUnlock()
-	return fileToDependenciesMap[filePath]
-}
-
-// Returns the parent file that imports the given file path
-func getParentFilePathFromDependency(filePath string) string {
-	fileToDependenciesMapLock.RLock()
-	defer fileToDependenciesMapLock.RUnlock()
-	for parentFilePath, dependencies := range fileToDependenciesMap {
-		for _, dependency := range dependencies {
-			if dependency == filePath {
-				return parentFilePath
-			}
-		}
-	}
-	return ""
-}
-
-// Returns the parent files that imports the given file path
-func getParentFilePathsFromDependency(filePath string) []string {
-	fileToDependenciesMapLock.RLock()
-	defer fileToDependenciesMapLock.RUnlock()
+func getParentFilesFromDependency(dependencyPath string) []string {
+	parentFileToDependenciesMapLock.RLock()
+	defer parentFileToDependenciesMapLock.RUnlock()
 	var parentFilePaths []string
-	for parentFilePath, dependencies := range fileToDependenciesMap {
+	for parentFilePath, dependencies := range parentFileToDependenciesMap {
 		for _, dependency := range dependencies {
-			if dependency == filePath {
+			if dependency == dependencyPath {
 				parentFilePaths = append(parentFilePaths, parentFilePath)
 			}
 		}
 	}
 	return parentFilePaths
+}
+
+// Takes in a file path and return any routeID's that either render the file
+// or the file they render imports that file as a dependency
+func GetRouteIDSWithFile(fileName string) []string {
+	filePath := getFullFilePath(fileName)
+	reactFilesWithDependency := getParentFilesFromDependency(filePath)
+	if len(reactFilesWithDependency) == 0 {
+		reactFilesWithDependency = []string{filePath}
+	}
+	var routeIDS []string
+	for _, reactFile := range reactFilesWithDependency {
+		routeIDS = append(routeIDS, GetRouteIDSForReactFile(reactFile)...)
+	}
+	return routeIDS
 }
