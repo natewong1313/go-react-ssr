@@ -20,7 +20,7 @@ func WatchForFileChanges() {
 	defer watcher.Close()
 
 	if err := filepath.Walk(config.C.FrontendDir, watchFilesInDir); err != nil {
-		logger.L.Error().Err(err).Msg("Failed to add files in directory to watcher")
+		logger.L.Err(err).Msg("Failed to add files in directory to watcher")
 	}
 	for {
 		select {
@@ -36,7 +36,7 @@ func WatchForFileChanges() {
 				go BroadcastFileUpdateToClients(routeIDS)
 			}
 		case err := <-watcher.Errors:
-			logger.L.Error().Err(err).Msg("Error watching file")
+			logger.L.Err(err).Msg("Error watching file")
 		}
 	}
 }

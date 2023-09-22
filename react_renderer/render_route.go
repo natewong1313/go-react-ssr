@@ -27,7 +27,7 @@ func RenderRoute(renderConfig Config) []byte {
 	// Props are passed to the renderer as a JSON string, or set to null if no props are passed
 	props, err := getProps(renderConfig.Props)
 	if err != nil {
-		logger.L.Error().Err(err).Msg("Failed to convert props to JSON")
+		logger.L.Err(err).Msg("Failed to convert props to JSON")
 		return renderErrorHTMLString(err)
 	}
 	// Get the full path of the react component file

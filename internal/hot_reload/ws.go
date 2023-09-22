@@ -20,25 +20,25 @@ func StartServer() {
 	http.HandleFunc("/ws", serve)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", config.C.HotReloadServerPort), nil)
 	if err != nil {
-		logger.L.Error().Err(err).Msg("Hot reload server quit unexpectedly")
+		logger.L.Err(err).Msg("Hot reload server quit unexpectedly")
 	}
 }
 
 func serve(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.L.Error().Err(err).Msg("Failed to upgrade websocket")
+		logger.L.Err(err).Msg("Failed to upgrade websocket")
 		return
 	}
 	// Client should send routeID as first message
 	_, routeID, err := ws.ReadMessage()
 	if err != nil {
-		logger.L.Error().Err(err).Msg("Failed to read message from websocket")
+		logger.L.Err(err).Msg("Failed to read message from websocket")
 		return
 	}
 	err = ws.WriteMessage(1, []byte("Connected"))
 	if err != nil {
-		logger.L.Error().Err(err).Msg("Failed to write message to websocket")
+		logger.L.Err(err).Msg("Failed to write message to websocket")
 		return
 	}
 	// Add client to connectedClients
