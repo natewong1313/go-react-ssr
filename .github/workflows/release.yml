@@ -28,3 +28,8 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update godoc.org
+        run: |
+          OPERATOR_VERSION=$(git describe --tags)
+          curl https://proxy.golang.org/github.com/natewong1313/go-react-ssr/@v/${OPERATOR_VERSION}.info
