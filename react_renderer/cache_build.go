@@ -23,24 +23,28 @@ func checkForCachedBuild(filePath string) (CachedBuild, bool) {
 }
 
 // Add a build to the cache
-func cacheBuild(filePath string, cachedBuild CachedBuild) {
+func cacheBuild(routeID, filePath string, cachedBuild CachedBuild) {
 	logger.L.Debug().Msgf("Caching build for %s", filePath)
 	cachedBuildsLock.Lock()
 	defer cachedBuildsLock.Unlock()
-	cachedBuilds[filePath] = cachedBuild
+	cachedBuilds[routeID] = cachedBuild
 }
 
 // Remove a build from the cache
-func UpdateCacheOnFileChange(filePath string) string {
+func UpdateCacheOnFileChange(filePath string) []string {
 	filePath = getFullFilePath(filePath)
 	filePathFoundInCache := deleteFromCache(filePath)
 	if !filePathFoundInCache {
-		filePath = getParentFilePathFromDependency(filePath)
-		deleteFromCache(filePath)
+		filePaths := getParentFilePathsFromDependency(filePath)
+		deleteFilesFromCache(filePaths)
+		return filePaths
+		// filePath = getParentFilePathFromDependency(filePath)
+		// deleteFromCache(filePath)
 	}
-	return filePath
+	return []string{filePath}
 }
 
+// Delete build from cache if exists
 func deleteFromCache(filePath string) bool {
 	cachedBuildsLock.Lock()
 	defer cachedBuildsLock.Unlock()
@@ -49,4 +53,10 @@ func deleteFromCache(filePath string) bool {
 		delete(cachedBuilds, filePath)
 	}
 	return ok
+}
+
+func deleteFilesFromCache(filePaths []string) {
+	for _, filePath := range filePaths {
+		deleteFromCache(filePath)
+	}
 }

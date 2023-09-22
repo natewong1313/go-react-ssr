@@ -6,28 +6,27 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/buger/jsonparser"
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
+	"github.com/natewong1313/go-react-ssr/config"
 )
 
-func BuildFile(filePath, props string) (CachedBuild, string, error) {
+func buildReactFile(routeID, reactFilePath, props string) (CachedBuild, []string, error) {
 	var cachedBuild CachedBuild
-	// Get the path of the renderer file
-	newFilePath, err := makeRendererFile(filePath, props)
-	if err != nil {
-		return cachedBuild, "", err
-	}
-	// Get temporary directory
-	osCacheDir, _ := os.UserCacheDir()
-	outDir := filepath.Join(osCacheDir, "gossr")
-	// Build the file with esbuild
-	result := esbuildApi.Build(esbuildApi.BuildOptions{
-		EntryPoints:       []string{newFilePath},
+	// Build with esbuild
+	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
+		// Build contents from a string rather than file
+		Stdin: &esbuildApi.StdinOptions{
+			Contents:   getBuildContents(reactFilePath, props),
+			Loader:     esbuildApi.LoaderTSX,
+			ResolveDir: config.C.FrontendDir,
+		},
 		Bundle:            true,
 		MinifyWhitespace:  os.Getenv("APP_ENV") == "production",
 		MinifyIdentifiers: os.Getenv("APP_ENV") == "production",
 		MinifySyntax:      os.Getenv("APP_ENV") == "production",
 		Metafile:          true,
-		Outdir:            outDir,
+		Outdir:            "/", // This is ignored because we are using the metafile
 		Loader: map[string]esbuildApi.Loader{
 			".png":  esbuildApi.LoaderDataURL,
 			".svg":  esbuildApi.LoaderDataURL,
@@ -37,42 +36,41 @@ func BuildFile(filePath, props string) (CachedBuild, string, error) {
 			".bmp":  esbuildApi.LoaderDataURL,
 		},
 	})
-	// Remove renderer file
-	err = os.Remove(newFilePath)
-	if err != nil {
-		return cachedBuild, "", err
+	if len(buildResult.Errors) > 0 {
+		// Return formatted error
+		return cachedBuild, nil, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
 	}
-	if len(result.Errors) > 0 {
-		return cachedBuild, "", fmt.Errorf("%s <br>in %s <br>at %s", result.Errors[0].Text, result.Errors[0].Location.File, result.Errors[0].Location.LineText)
-	}
-	cachedBuild.CompiledJS = string(result.OutputFiles[0].Contents)
-	for _, file := range result.OutputFiles {
+	// First output file is the react build
+	cachedBuild.CompiledJS = string(buildResult.OutputFiles[0].Contents)
+	// Check for css file
+	for _, file := range buildResult.OutputFiles {
 		if strings.HasSuffix(string(file.Path), ".css") {
 			cachedBuild.CompiledCSS = string(file.Contents)
 			break
 		}
 	}
 	// Return the compiled build
-	return cachedBuild, result.Metafile, nil
+	return cachedBuild, getDependencyPathsFromMetafile(buildResult.Metafile), nil
 }
 
-// Creates a temporary file that imports the file to be rendered
-func makeRendererFile(route, props string) (string, error) {
-	fileExtension := filepath.Ext(route)
-	fileName := filepath.Base(route)
-	newFilePath := strings.Replace(route, fileExtension, "-gossr-temporary"+fileExtension, 1)
-	// Create the file if it doesn't exist
-	file, err := os.OpenFile(newFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-	contents := []byte(fmt.Sprintf(`import * as React from "react";
-    import * as ReactDOM from "react-dom";
-    import App from "./%s";
-    const props = %s
-    ReactDOM.render(<App {...props} />, document.getElementById("root"));`, fileName, props))
-	file.Write(contents)
-	file.Sync()
-	return newFilePath, nil
+// Parse dependencies from esbuild metafile
+func getDependencyPathsFromMetafile(metafile string) []string {
+	var dependencyPaths []string
+	jsonparser.ObjectEach([]byte(metafile), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+		if !strings.Contains(string(key), "/node_modules/") {
+			dependencyPaths = append(dependencyPaths, getFullFilePath(string(key)))
+		}
+		return nil
+	}, "inputs")
+	return dependencyPaths
+}
+
+// This will imports the desired react file and sets props
+func getBuildContents(reactFilePath, props string) string {
+	return fmt.Sprintf(`import * as React from "react";
+	import * as ReactDOM from "react-dom";
+	import App from "./%s";
+	const props = %s
+	ReactDOM.render(<App {...props} />, document.getElementById("root"));`,
+		filepath.Base(reactFilePath), props)
 }

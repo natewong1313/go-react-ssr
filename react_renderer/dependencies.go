@@ -59,6 +59,7 @@ func GetDependencies(filePath string) []string {
 	return fileToDependenciesMap[filePath]
 }
 
+// Returns the parent file that imports the given file path
 func getParentFilePathFromDependency(filePath string) string {
 	fileToDependenciesMapLock.RLock()
 	defer fileToDependenciesMapLock.RUnlock()
@@ -70,4 +71,19 @@ func getParentFilePathFromDependency(filePath string) string {
 		}
 	}
 	return ""
+}
+
+// Returns the parent files that imports the given file path
+func getParentFilePathsFromDependency(filePath string) []string {
+	fileToDependenciesMapLock.RLock()
+	defer fileToDependenciesMapLock.RUnlock()
+	var parentFilePaths []string
+	for parentFilePath, dependencies := range fileToDependenciesMap {
+		for _, dependency := range dependencies {
+			if dependency == filePath {
+				parentFilePaths = append(parentFilePaths, parentFilePath)
+			}
+		}
+	}
+	return parentFilePaths
 }

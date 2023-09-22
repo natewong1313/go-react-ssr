@@ -14,7 +14,7 @@ import (
 var watcher *fsnotify.Watcher
 
 // https://gist.github.com/sdomino/74980d69f9fa80cb9d73#file-watch_recursive-go
-// Watches for file changes in the src directory
+// Watches for file changes in the specified src directory
 func WatchForFileChanges() {
 	watcher, _ = fsnotify.NewWatcher()
 	defer watcher.Close()
@@ -26,10 +26,16 @@ func WatchForFileChanges() {
 		select {
 		// Watch for file changes
 		case event := <-watcher.Events:
+			// Watch for file created, deleted, updated, or renamed events
 			if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "-gossr-temporary") {
 				logger.L.Info().Msgf("File changed: %s, reloading", event.Name)
-				parentFilePath := react_renderer.UpdateCacheOnFileChange(event.Name)
-				go BroadcastFileUpdateToClients(parentFilePath)
+				// If the file that changed is just a dependency
+				// parentFilePath := react_renderer.UpdateCacheOnFileChange(event.Name)
+				// go BroadcastFileUpdateToClients(parentFilePath)
+				parentFilePaths := react_renderer.UpdateCacheOnFileChange(event.Name)
+				for _, parentFilePath := range parentFilePaths {
+					go BroadcastFileUpdateToClients(parentFilePath)
+				}
 			}
 		case err := <-watcher.Errors:
 			logger.L.Error().Err(err).Msg("Error watching file")
