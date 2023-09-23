@@ -16,6 +16,8 @@ func main() {
 		FrontendDir:        "./frontend/src",
 		GeneratedTypesPath: "./frontend/src/generated.d.ts",
 		PropsStructsPath:   "./models/props.go",
+		GlobalCSSFilePath:  "./frontend/src/Main.css",
+		TailwindConfigPath: "./frontend/tailwind.config.js",
 	})
 
 	g.GET("/", func(c *gin.Context) {

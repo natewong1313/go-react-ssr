@@ -8,6 +8,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/logger"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"github.com/natewong1313/go-react-ssr/react_renderer"
 )
 
@@ -27,13 +28,21 @@ func WatchForFileChanges() {
 		// Watch for file changes
 		case event := <-watcher.Events:
 			// Watch for file created, deleted, updated, or renamed events
-			if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "-gossr-temporary") {
+			if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "gossr-temporary") {
 				filePath := event.Name
 				logger.L.Info().Msgf("File changed: %s, reloading", filePath)
-				// Get all route ids that use that file or have it as a dependency
-				routeIDS := react_renderer.GetRouteIDSWithFile(filePath)
+				var routeIDS []string
+				// Check if its the global css file thats gotten updated
+				if utils.GetFullFilePath(filePath) == utils.GetFullFilePath(config.C.GlobalCSSFilePath) {
+					react_renderer.BuildGlobalCSSFile()
+					routeIDS = react_renderer.GetAllRouteIDS()
+				} else {
+					// Get all route ids that use that file or have it as a dependency
+					routeIDS = react_renderer.GetRouteIDSWithFile(filePath)
+				}
 				// Tell all browser clients listening for those route ids to reload
 				go BroadcastFileUpdateToClients(routeIDS)
+
 			}
 		case err := <-watcher.Errors:
 			logger.L.Err(err).Msg("Error watching file")

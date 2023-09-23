@@ -30,6 +30,16 @@ func GetRouteIDSForReactFile(reactFilePath string) []string {
 	return routes
 }
 
+func GetAllRouteIDS() []string {
+	routeIDToReactFileMapLock.RLock()
+	defer routeIDToReactFileMapLock.RUnlock()
+	var routes []string
+	for route := range routeIDToReactFileMap {
+		routes = append(routes, route)
+	}
+	return routes
+}
+
 // Store the react files and the depdenencies they import
 var parentFileToDependenciesMap = map[string][]string{}
 var parentFileToDependenciesMapLock = sync.RWMutex{}
