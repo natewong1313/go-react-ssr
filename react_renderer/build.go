@@ -12,19 +12,14 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-type Build struct {
-	CompiledJS  string
-	CompiledCSS string
-}
-
 func buildReactFile(routeID, reactFilePath, props string) (Build, []string, error) {
 	var build Build
+
 	// Build with esbuild
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
-		// Build contents from a string rather than file
 		Stdin: &esbuildApi.StdinOptions{
-			Contents:   getBuildContents(reactFilePath, props),
-			Loader:     esbuildApi.LoaderTSX,
+			Contents:   getBuildContents(reactFilePath, props), // Build contents from a string rather than file
+			Loader:     getLoaderType(reactFilePath),
 			ResolveDir: config.C.FrontendDir,
 		},
 		Bundle:            true,
@@ -59,9 +54,26 @@ func buildReactFile(routeID, reactFilePath, props string) (Build, []string, erro
 	return build, getDependencyPathsFromMetafile(buildResult.Metafile), nil
 }
 
+// Get the esbuild loader type for the react file, dependeing on the file extension
+func getLoaderType(reactFilePath string) esbuildApi.Loader {
+	loader := esbuildApi.LoaderTSX
+	if strings.HasSuffix(reactFilePath, ".ts") {
+		loader = esbuildApi.LoaderTS
+	}
+	if strings.HasSuffix(reactFilePath, ".js") {
+		loader = esbuildApi.LoaderJS
+	}
+	if strings.HasSuffix(reactFilePath, ".jsx") {
+		loader = esbuildApi.LoaderJSX
+	}
+	return loader
+}
+
 // Parse dependencies from esbuild metafile
 func getDependencyPathsFromMetafile(metafile string) []string {
 	var dependencyPaths []string
+	// Parse the metafile and get the paths of the dependencies
+	// Ignore dependencies in node_modules
 	jsonparser.ObjectEach([]byte(metafile), func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
 		if !strings.Contains(string(key), "/node_modules/") {
 			dependencyPaths = append(dependencyPaths, utils.GetFullFilePath(string(key)))
@@ -77,6 +89,7 @@ func getBuildContents(reactFilePath, props string) string {
 	if tempCssFilePath != "" {
 		globalCssImport = fmt.Sprintf(`import "%s";`, tempCssFilePath)
 	}
+	// Return the contents of the importer file
 	return fmt.Sprintf(`import * as React from "react";
 	import * as ReactDOM from "react-dom";
 	%s
