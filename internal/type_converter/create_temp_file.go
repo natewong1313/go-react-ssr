@@ -11,6 +11,7 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
+// createCacheFolder creates a folder in the local cache directory to store the temporary generator file
 func createCacheFolder() (string, error) {
 	osCacheDir, _ := os.UserCacheDir()
 	cacheFolderPath := filepath.Join(osCacheDir, "gossr")
@@ -60,6 +61,7 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 	return temporaryFilePath, nil
 }
 
+// getModuleName gets the module name of the props structs file
 func getModuleName(propsStructsPath string) (string, error) {
 	dir := filepath.Dir(utils.GetFullFilePath(propsStructsPath))
 	cmd := exec.Command("go", "list")

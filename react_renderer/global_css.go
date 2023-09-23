@@ -13,20 +13,22 @@ import (
 var tempCssFolderPath string
 var tempCssFilePath string
 
-// Create a temporary CSS file that will be imported in all files and can be used to store tailwind styles
+// Copies the contents of the global css file to a temporary css file
+// and uses tailwind to compile it if tailwind is enabled
 func BuildGlobalCSSFile() error {
 	var err error
+	// If the temporary folder has already been created, skip
 	if tempCssFolderPath == "" {
 		tempCssFolderPath, err = createTempCSSFolder()
 		if err != nil {
 			return err
 		}
+		tempCssFilePath, err = createTempCSSFile()
+		if err != nil {
+			return err
+		}
 	}
-	tempCssFilePath, err = createTempCSSFile()
-	if err != nil {
-		return err
-	}
-	// Compile the tailwind css file and save the output to tempCssFilePath if tailwind is enabled
+	// If tailwind is enabled, compile the global css file with tailwind and save the output to tempCssFilePath
 	if config.C.TailwindConfigPath != "" {
 		logger.L.Debug().Msg("Compiling tailwind css file")
 		_, err = compileTailwindCssFile(tempCssFilePath)

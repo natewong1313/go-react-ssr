@@ -2,6 +2,13 @@ package react_renderer
 
 import "html/template"
 
+// Build stores the compiled JS and CSS for a react file
+type Build struct {
+	CompiledJS  string
+	CompiledCSS string
+}
+
+// Config stores the configuration for a react file to be rendered
 type Config struct {
 	File     string
 	Title    string
@@ -10,6 +17,7 @@ type Config struct {
 	Props    interface{}
 }
 
+// LinkElement stores the attributes for a link element
 type LinkElement struct {
 	Href     string
 	Rel      string
@@ -19,6 +27,7 @@ type LinkElement struct {
 	Title    string
 }
 
+// HTMLParams stores the parameters for the html template
 type HTMLParams struct {
 	Title      string
 	MetaTags   map[string]string
@@ -30,6 +39,7 @@ type HTMLParams struct {
 	IsDev      bool
 }
 
+// ErrorParams stores the parameters for the error template
 type ErrorParams struct {
 	Error string
 }

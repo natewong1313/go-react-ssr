@@ -7,6 +7,8 @@ import (
 	_ "github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 
+// Init starts the type converter
+// It gets the name of structs in PropsStructsPath and generates a temporary file to run the type converter
 func Init() error {
 	// Get struct names from file
 	structNames, err := getStructNamesFromFile(config.C.PropsStructsPath)

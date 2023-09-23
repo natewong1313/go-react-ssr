@@ -9,6 +9,7 @@ import (
 
 var L zerolog.Logger
 
+// Init initializes a global logger instance
 func Init() {
 	// zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	L = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).With().Timestamp().Logger()

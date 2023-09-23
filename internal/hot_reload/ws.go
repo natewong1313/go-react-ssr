@@ -15,6 +15,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// StartServer starts the hot reload websocket server at the port specified in the config
 func StartServer() {
 	logger.L.Info().Msgf("Serving hot reload websocket at port %d", config.C.HotReloadServerPort)
 	http.HandleFunc("/ws", serve)
@@ -24,6 +25,7 @@ func StartServer() {
 	}
 }
 
+// On a new websocket connection, add the client (as its routeID) to the connectedClients map
 func serve(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

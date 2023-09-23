@@ -30,6 +30,7 @@ func GetRouteIDSForReactFile(reactFilePath string) []string {
 	return routes
 }
 
+// Returns all the route IDS that have been rendered
 func GetAllRouteIDS() []string {
 	routeIDToReactFileMapLock.RLock()
 	defer routeIDToReactFileMapLock.RUnlock()
@@ -44,12 +45,14 @@ func GetAllRouteIDS() []string {
 var parentFileToDependenciesMap = map[string][]string{}
 var parentFileToDependenciesMapLock = sync.RWMutex{}
 
+// Updates the parentFileToDependenciesMap with the new dependencies
 func updateParentFileDependencies(reactFilePath string, dependencies []string) {
 	parentFileToDependenciesMapLock.Lock()
 	defer parentFileToDependenciesMapLock.Unlock()
 	parentFileToDependenciesMap[reactFilePath] = dependencies
 }
 
+// Returns any parent files that import the dependency
 func getParentFilesFromDependency(dependencyPath string) []string {
 	parentFileToDependenciesMapLock.RLock()
 	defer parentFileToDependenciesMapLock.RUnlock()
@@ -68,8 +71,10 @@ func getParentFilesFromDependency(dependencyPath string) []string {
 // or the file they render imports that file as a dependency
 func GetRouteIDSWithFile(fileName string) []string {
 	filePath := utils.GetFullFilePath(fileName)
+	// Get the parent files that import the file as a dependency
 	reactFilesWithDependency := getParentFilesFromDependency(filePath)
 	if len(reactFilesWithDependency) == 0 {
+		// If the file is not imported as a dependency, check if it is rendered directly
 		reactFilesWithDependency = []string{filePath}
 	}
 	var routeIDS []string

@@ -11,6 +11,7 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
+// Go SSR config
 type Config struct {
 	FrontendDir         string `default:"./frontend/src"`
 	GeneratedTypesPath  string `default:"./frontend/src/generated/types.ts"`
@@ -22,6 +23,7 @@ type Config struct {
 
 var C Config
 
+// Load loads the config and runs validations
 func Load(config Config) error {
 	C = config
 	if !checkPathExists(C.FrontendDir) {

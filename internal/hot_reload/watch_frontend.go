@@ -34,10 +34,10 @@ func WatchForFileChanges() {
 				// Store the routes that need to be reloaded
 				var routeIDS []string
 				switch {
-				case globalCSSFileUpdated(filePath):
+				case globalCSSFileUpdated(filePath): // If the global css file has been updated, rebuild it and reload all routes
 					react_renderer.BuildGlobalCSSFile()
 					routeIDS = react_renderer.GetAllRouteIDS()
-				case needsTailwindRecompile(filePath):
+				case needsTailwindRecompile(filePath): // If tailwind is enabled and a react file has been updated, rebuild the global css file and reload all routes
 					react_renderer.BuildGlobalCSSFile()
 					fallthrough
 				default:
