@@ -1,7 +1,9 @@
 package config
 
 import (
+	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -23,22 +25,27 @@ var C Config
 func Load(config Config) error {
 	C = config
 	if !checkPathExists(C.FrontendDir) {
-		return errors.New("frontend dir does not exist")
+		return fmt.Errorf("frontend dir ar %s does not exist", C.FrontendDir)
 	}
 	if !checkPathExists(C.GeneratedTypesPath) {
-		return errors.New("generated types path does not exist")
+		return fmt.Errorf("generated types path at %s does not exist", C.GeneratedTypesPath)
 	}
 	if !checkPathExists(C.PropsStructsPath) {
-		return errors.New("props structs path does not exist")
+		return fmt.Errorf("props structs path at %s does not exist", C.PropsStructsPath)
 	}
 	if C.GlobalCSSFilePath != "" && !checkPathExists(C.GlobalCSSFilePath) {
-		return errors.New("global css file path does not exist")
+		return fmt.Errorf("global css file path at %s does not exist", C.GlobalCSSFilePath)
 	}
-	if C.TailwindConfigPath != "" && C.GlobalCSSFilePath == "" {
-		return errors.New("global css file path must be provided when using tailwind")
-	}
-	if C.TailwindConfigPath != "" && !checkTailwindInstalled() {
-		return errors.New("tailwind is not installed")
+	if C.TailwindConfigPath != "" {
+		if C.GlobalCSSFilePath == "" {
+			return errors.New("global css file path must be provided when using tailwind")
+		} else if !checkPathExists(C.GlobalCSSFilePath) {
+			return fmt.Errorf("global css file path at %s does not exist", C.GlobalCSSFilePath)
+		} else if !checkPathExists(C.TailwindConfigPath) {
+			return fmt.Errorf("tailwind config path at %s does not exist", C.TailwindConfigPath)
+		} else if !checkTailwindInstalled() {
+			return errors.New("tailwind is not installed")
+		}
 	}
 	return nil
 }
@@ -51,9 +58,12 @@ func checkPathExists(path string) bool {
 func checkTailwindInstalled() bool {
 	cmd := exec.Command("npm", "list", "--depth=0")
 	cmd.Dir = C.FrontendDir
-	output, err := cmd.CombinedOutput()
+	var outb, errb bytes.Buffer
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	err := cmd.Run()
 	if err != nil {
-		return false
+		return strings.Contains(errb.String(), "tailwindcss")
 	}
-	return strings.Contains(string(output), "tailwindcss")
+	return strings.Contains(outb.String(), "tailwindcss")
 }
