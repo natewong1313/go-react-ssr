@@ -11,7 +11,7 @@ import (
 
 func main() {
 	g := gin.Default()
-	g.StaticFile("favicon.ico", "./assets/favicon.ico")
+	g.StaticFile("favicon.ico", "./frontend/public/favicon.ico")
 	go_ssr.Init(config.Config{
 		FrontendDir:        "./frontend/src",
 		GeneratedTypesPath: "./frontend/src/generated.d.ts",
