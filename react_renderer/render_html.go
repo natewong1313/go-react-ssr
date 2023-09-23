@@ -10,20 +10,6 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/templates"
 )
 
-type HTMLParams struct {
-	Title      string
-	MetaTags   map[string]string
-	OGMetaTags map[string]string
-	JS         template.JS
-	CSS        template.CSS
-	RouteID    string
-	IsDev      bool
-}
-
-type ErrorParams struct {
-	Error string
-}
-
 // Renders the HTML template in internal/templates with the given parameters
 func renderHTMLString(params HTMLParams) []byte {
 	params.IsDev = os.Getenv("APP_ENV") != "production"

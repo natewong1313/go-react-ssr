@@ -12,13 +12,6 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-type Config struct {
-	File     string
-	Title    string
-	MetaTags map[string]string
-	Props    interface{}
-}
-
 // Converts the given react file path to a full html page
 func RenderRoute(renderConfig Config) []byte {
 	// Get the program counter for the caller of this function and use that for the id
@@ -47,6 +40,7 @@ func RenderRoute(renderConfig Config) []byte {
 		Title:      renderConfig.Title,
 		MetaTags:   getMetaTags(renderConfig.MetaTags),
 		OGMetaTags: getOGMetaTags(renderConfig.MetaTags),
+		Links:      renderConfig.Links,
 		JS:         template.JS(builtReactFile.CompiledJS),
 		CSS:        template.CSS(builtReactFile.CompiledCSS),
 		RouteID:    routeID,

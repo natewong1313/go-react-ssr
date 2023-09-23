@@ -8,6 +8,7 @@ const HTML_TEMPLATE = `<!DOCTYPE html>
 	<title>{{ .Title }}</title>
 	{{range $k, $v := .MetaTags}} <meta name="{{$k}}" content="{{$v}}" /> {{end}}
 	{{range $k, $v := .OGMetaTags}} <meta property="{{$k}}" content="{{$v}}" /> {{end}}
+	{{range .Links}}<link href="{{.Href}}" rel="{{.Rel}}" media="{{.Media}}" hreflang="{{.Hreflang}}" type="{{.Type}}" title="{{.Title}}" />{{end}}
 	<link rel="icon" href="/favicon.ico" />
   </head>
   <body>
