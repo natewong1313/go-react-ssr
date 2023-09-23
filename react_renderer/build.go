@@ -73,12 +73,16 @@ func getDependencyPathsFromMetafile(metafile string) []string {
 
 // This will imports the desired react file and sets props
 func getBuildContents(reactFilePath, props string) string {
+	globalCssImport := ""
+	if tempCssFilePath != "" {
+		globalCssImport = fmt.Sprintf(`import "%s";`, tempCssFilePath)
+	}
 	return fmt.Sprintf(`import * as React from "react";
 	import * as ReactDOM from "react-dom";
 	%s
 	import App from "./%s";
 	const props = %s
 	ReactDOM.render(<App {...props} />, document.getElementById("root"));`,
-		fmt.Sprintf(`import "%s";`, tempCssFilePath),
+		globalCssImport,
 		filepath.Base(reactFilePath), props)
 }
