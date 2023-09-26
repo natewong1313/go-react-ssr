@@ -20,7 +20,7 @@ func Test_compileTailwindCssFile(t *testing.T) {
 		wantErr bool
 	}{
 		{"test compiling tailwind with global css file", args{
-			inputFilePath: "../examples/gin/frontend/src/Main.css"},
+			inputFilePath: "../examples/frontend-tailwind/src/Main.css"},
 			"! tailwindcss v3.3.3 | MIT License | https://tailwindcss.com",
 			false,
 		},
@@ -38,7 +38,7 @@ func Test_compileTailwindCssFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			config.Load(config.Config{
 				GlobalCSSFilePath:  tt.args.inputFilePath,
-				TailwindConfigPath: "../examples/gin/frontend/tailwind.config.js",
+				TailwindConfigPath: "../examples/frontend-tailwind/tailwind.config.js",
 			})
 			got, err := compileTailwindCssFile(tempFilePath)
 			if (err != nil) != tt.wantErr {

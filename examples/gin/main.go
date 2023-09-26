@@ -11,13 +11,11 @@ import (
 
 func main() {
 	g := gin.Default()
-	g.StaticFile("favicon.ico", "./frontend/public/favicon.ico")
+	g.StaticFile("favicon.ico", "../frontend/public/favicon.ico")
 	go_ssr.Init(config.Config{
-		FrontendDir:        "./frontend/src",
-		GeneratedTypesPath: "./frontend/src/generated.d.ts",
+		FrontendDir:        "../frontend/src",
+		GeneratedTypesPath: "../frontend/src/generated.d.ts",
 		PropsStructsPath:   "./models/props.go",
-		GlobalCSSFilePath:  "./frontend/src/Main.css",
-		TailwindConfigPath: "./frontend/tailwind.config.js",
 	})
 
 	g.GET("/", func(c *gin.Context) {
@@ -29,7 +27,7 @@ func main() {
 				"description": "Hello world!",
 			},
 			Props: &models.IndexRouteProps{
-				InitialCount: 0,
+				InitialCount: 1,
 			},
 		}))
 	})

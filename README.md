@@ -31,6 +31,8 @@ Go-SSR was developed due to a lack of an existing product in the Go ecosystem th
 
 # 🛠️ Getting Started
 
+<!-- # 🛠️ Getting Started
+
 Go-SSR can either be installed by cloning a template or simply installing it on your own. It is reccomended to take a look at the [examples](/examples) folder to see how projects are structured.
 
 ## ⚡️ Using pre-configured templates
@@ -96,4 +98,4 @@ g.GET("/", func(c *gin.Context) {
 		},
 	}))
 })
-```
+``` -->
