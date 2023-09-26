@@ -4,5 +4,5 @@ use (
 	.
 	./examples/fiber
 	./examples/gin
-	./cli
+	./gossr-cli
 )
