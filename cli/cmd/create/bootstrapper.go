@@ -37,7 +37,7 @@ func (b *Bootstrapper) Start() {
 
 func (b *Bootstrapper) cloneRepo() {
 	logger.L.Info().Msg("Cloning example repository")
-	cmd := exec.Command("git", "clone", "-b", "go-ssr-cli", "https://github.com/natewong1313/go-react-ssr.git")
+	cmd := exec.Command("git", "clone", "https://github.com/natewong1313/go-react-ssr.git")
 	cmd.Dir = b.TempDirPath
 	err := cmd.Run()
 	if err != nil {
