@@ -7,7 +7,7 @@ import (
 
 func CheckPathExists(projectDir string) bool {
 	if _, err := os.Stat(projectDir); os.IsNotExist(err) {
-		HandleError(err)
+		return false
 	}
 	return true
 }

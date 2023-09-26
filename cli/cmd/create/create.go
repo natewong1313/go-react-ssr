@@ -31,12 +31,18 @@ func create(cmd *cobra.Command, args []string) {
 	useTailwind := prompt_isUsingTailwind()
 
 	projectDirExists := utils.CheckPathExists(projectDir)
-	projectDirEmpty := utils.CheckPathEmpty(projectDir)
-	if projectDirExists && !projectDirEmpty && !prompt_shouldWipeDirectory() {
-		os.Exit(0)
-	}
-	if !projectDirEmpty {
-		wipeDirectory(projectDir)
+	if projectDirExists {
+		projectDirEmpty := !utils.CheckPathEmpty(projectDir)
+		if !projectDirEmpty && !prompt_shouldWipeDirectory() {
+			os.Exit(0)
+		} else {
+			wipeDirectory(projectDir)
+		}
+
+	} else {
+		if err := os.MkdirAll(projectDir, 0777); err != nil {
+			utils.HandleError(err)
+		}
 	}
 
 	bootstrapper := Bootstrapper{
