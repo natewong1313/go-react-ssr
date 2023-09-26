@@ -31,31 +31,27 @@ Go-SSR was developed due to a lack of an existing product in the Go ecosystem th
 
 # 🛠️ Getting Started
 
-<!-- # 🛠️ Getting Started
+## ⚡️ Using the CLI tool
 
-Go-SSR can either be installed by cloning a template or simply installing it on your own. It is reccomended to take a look at the [examples](/examples) folder to see how projects are structured.
+<img src="https://i.imgur.com/mygp5BT.png" height="400" />
 
-## ⚡️ Using pre-configured templates
-
-Templates have been pre-configured to be installed from the console using the [`gonew`](https://go.dev/blog/gonew) command. View more info in the [examples](/examples) folder
-
-### Gin
+The easiest way to get a project up and running is by using the command line tool. Install it with the following command
 
 ```console
-$ gonew github.com/natewong1313/go-react-ssr/examples/gin example.com/gin
-$ cd gin && go get github.com/natewong1313/go-react-ssr@latest
+$ go install github.com/natewong1313/go-react-ssr/gossr-cli@latest
 ```
 
-### Fiber
+Then you can call the following command to create a project
 
 ```console
-$ gonew github.com/natewong1313/go-react-ssr/examples/fiber example.com/fiber
-$ cd fiber && go get github.com/natewong1313/go-react-ssr@latest
+$ gossr-cli create
 ```
+
+You'll be prompted the path to place the project, what web framework you want to use, and whether or not you want to use Tailwind
 
 ## 📝 Add to existing web server
 
-First, install the module
+To add Go-SSR to an existing Go web server, take a look at the [examples](/examples) folder to get an idea of what a project looks like. In general, you'll want to follow these commands:
 
 ```console
 $ go get -u github.com/natewong1313/go-react-ssr
@@ -72,7 +68,7 @@ import (
 )
 ```
 
-In your main function, initialize the plugin
+In your main function, initialize the plugin. Create a folder for your structs that hold your props to go, which is called `models` in the below example. You'll also want to create a folder for your React code (called `frontend` in this example) inside your project and specifiy the paths in the config. You may want to clone the [example folder](/examples/frontend/) and use that.
 
 ```go
 go_ssr.Init(config.Config{
@@ -86,16 +82,17 @@ Once the plugin has been initialized, you can call the `react_renderer.RenderRou
 
 ```go
 g.GET("/", func(c *gin.Context) {
-	c.Writer.Write(react_renderer.RenderRoute(react_renderer.Config{
+	renderedResponse := react_renderer.RenderRoute(react_renderer.Config{
 		File:  "Home.tsx", // The file name, located in FrontendDir
 		Title: "My example app", // Set the app title
 		MetaTags: map[string]string{ // Configure meta tags
 			"og:title":    "My example app",
 			"description": "Example description",
 		},
-		Props: &models.IndexRouteProps{ // Pass in your props struct
+		Props: &models.IndexRouteProps{ // Pass in your props struct if you have props
 			InitialCount: 0,
 		},
-	}))
+	})
+	c.Writer.Write(renderedResponse)
 })
-``` -->
+```
