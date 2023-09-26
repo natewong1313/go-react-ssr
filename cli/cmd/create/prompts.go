@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	"github.com/natewong1313/go-react-ssr/go-ssr-cli/logger"
-	"github.com/natewong1313/go-react-ssr/go-ssr-cli/utils"
+	"github.com/natewong1313/go-react-ssr/cli/logger"
+	"github.com/natewong1313/go-react-ssr/cli/utils"
 )
 
 func prompt_getProjectDirectory(args []string) string {

@@ -1,4 +1,4 @@
-module github.com/natewong1313/go-react-ssr/go-ssr-cli
+module github.com/natewong1313/go-react-ssr/cli
 
 go 1.21.1
 

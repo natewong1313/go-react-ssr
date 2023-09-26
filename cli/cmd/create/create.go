@@ -5,9 +5,9 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/natewong1313/go-react-ssr/go-ssr-cli/cmd"
-	"github.com/natewong1313/go-react-ssr/go-ssr-cli/logger"
-	"github.com/natewong1313/go-react-ssr/go-ssr-cli/utils"
+	"github.com/natewong1313/go-react-ssr/cli/cmd"
+	"github.com/natewong1313/go-react-ssr/cli/logger"
+	"github.com/natewong1313/go-react-ssr/cli/utils"
 	"github.com/spf13/cobra"
 )
 
