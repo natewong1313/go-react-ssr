@@ -14,13 +14,13 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 	app.Use(favicon.New(favicon.Config{
-		File: "./frontend/public/favicon.ico",
+		File: "../frontend/public/favicon.ico",
 		URL:  "/favicon.ico",
 	}))
 
 	go_ssr.Init(config.Config{
-		FrontendDir:        "./frontend/src",
-		GeneratedTypesPath: "./frontend/src/generated.d.ts",
+		FrontendDir:        "../frontend/src",
+		GeneratedTypesPath: "../frontend/src/generated.d.ts",
 		PropsStructsPath:   "./models/props.go",
 	})
 
@@ -33,7 +33,7 @@ func main() {
 				"description": "Hello world!",
 			},
 			Props: &models.IndexRouteProps{
-				InitialCount: 0,
+				InitialCount: 1,
 			},
 		})
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
