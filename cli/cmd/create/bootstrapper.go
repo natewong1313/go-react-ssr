@@ -8,8 +8,8 @@ import (
 
 	cp "github.com/otiai10/copy"
 
-	"github.com/natewong1313/go-react-ssr/cli/logger"
-	"github.com/natewong1313/go-react-ssr/cli/utils"
+	"github.com/natewong1313/go-react-ssr/gossr-cli/logger"
+	"github.com/natewong1313/go-react-ssr/gossr-cli/utils"
 	"github.com/rs/zerolog"
 )
 
