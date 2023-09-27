@@ -12,7 +12,7 @@ const HTML_TEMPLATE = `<!DOCTYPE html>
 	<link rel="icon" href="/favicon.ico" />
   </head>
   <body>
-	<div id="root"></div>
+	<div id="root">{{ .ServerHTML }}</div>
 	<style>
 	  {{ .CSS }}}
 	</style>

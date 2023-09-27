@@ -12,13 +12,21 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-func buildReactFile(routeID, reactFilePath, props string) (Build, []string, error) {
-	var build Build
-
+func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
+	globalCssImport := ""
+	if tempCssFilePath != "" {
+		globalCssImport = fmt.Sprintf(`import "%s";`, tempCssFilePath)
+	}
 	// Build with esbuild
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
-			Contents:   getBuildContents(reactFilePath, props), // Build contents from a string rather than file
+			Contents: fmt.Sprintf(`import * as React from "react";
+			import * as ReactDOM from "react-dom";
+			%s
+			import App from "./%s";
+			const props = %s
+			ReactDOM.hydrate(<App {...props} />, document.getElementById("root"));`,
+				globalCssImport, filepath.Base(reactFilePath), props),
 			Loader:     getLoaderType(reactFilePath),
 			ResolveDir: config.C.FrontendDir,
 		},
@@ -39,19 +47,12 @@ func buildReactFile(routeID, reactFilePath, props string) (Build, []string, erro
 	})
 	if len(buildResult.Errors) > 0 {
 		// Return formatted error
-		return build, nil, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
+		c <- ClientBuildResult{Error: fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)}
+		return
 	}
-	// First output file is the react build
-	build.CompiledJS = string(buildResult.OutputFiles[0].Contents)
-	// Check for css file
-	for _, file := range buildResult.OutputFiles {
-		if strings.HasSuffix(string(file.Path), ".css") {
-			build.CompiledCSS = string(file.Contents)
-			break
-		}
-	}
+	compiledJS := string(buildResult.OutputFiles[0].Contents)
 	// Return the compiled build
-	return build, getDependencyPathsFromMetafile(buildResult.Metafile), nil
+	c <- ClientBuildResult{JS: compiledJS, Dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}
 }
 
 // Get the esbuild loader type for the react file, dependeing on the file extension
@@ -81,21 +82,4 @@ func getDependencyPathsFromMetafile(metafile string) []string {
 		return nil
 	}, "inputs")
 	return dependencyPaths
-}
-
-// This will imports the desired react file and sets props
-func getBuildContents(reactFilePath, props string) string {
-	globalCssImport := ""
-	if tempCssFilePath != "" {
-		globalCssImport = fmt.Sprintf(`import "%s";`, tempCssFilePath)
-	}
-	// Return the contents of the importer file
-	return fmt.Sprintf(`import * as React from "react";
-	import * as ReactDOM from "react-dom";
-	%s
-	import App from "./%s";
-	const props = %s
-	ReactDOM.render(<App {...props} />, document.getElementById("root"));`,
-		globalCssImport,
-		filepath.Base(reactFilePath), props)
 }

@@ -37,9 +37,22 @@ type HTMLParams struct {
 	CSS        template.CSS
 	RouteID    string
 	IsDev      bool
+	ServerHTML template.HTML
 }
 
 // ErrorParams stores the parameters for the error template
 type ErrorParams struct {
 	Error string
+}
+
+type ClientBuildResult struct {
+	JS           string
+	Dependencies []string
+	Error        error
+}
+
+type ServerBuildResult struct {
+	HTML  string
+	CSS   string
+	Error error
 }

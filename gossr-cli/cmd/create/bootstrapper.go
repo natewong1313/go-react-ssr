@@ -117,6 +117,7 @@ func (b *Bootstrapper) replaceImportsInGoFile() {
 		utils.HandleError(err)
 	}
 	newContents := strings.Replace(string(read), "../frontend", "./frontend", -1)
+	newContents = strings.Replace(newContents, "-tailwind/", "/", -1)
 	err = os.WriteFile(b.ProjectDir+"/main.go", []byte(newContents), 0644)
 	if err != nil {
 		utils.HandleError(err)

@@ -26,24 +26,38 @@ func RenderRoute(renderConfig Config) []byte {
 	// Get the full path of the react component file
 	reactFilePath := utils.GetFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)
 	// Update the routeID to file map
-	updateRouteIDToReactFileMap(routeID, reactFilePath)
-	// Use esbuild to build the react file
-	builtReactFile, dependencies, err := buildReactFile(routeID, reactFilePath, props)
-	if err != nil {
-		logger.L.Err(err).Msg("Error occured building file")
-		return renderErrorHTMLString(err)
+	go updateRouteIDToReactFileMap(routeID, reactFilePath)
+
+	// Build the client files and server html on different threads
+	clientBuildChan := make(chan ClientBuildResult)
+	serverBuildChan := make(chan ServerBuildResult)
+
+	go buildForClient(reactFilePath, props, clientBuildChan)
+	go buildForServer(reactFilePath, props, serverBuildChan)
+	clientBuildResult := <-clientBuildChan
+	serverBuildResult := <-serverBuildChan
+
+	if clientBuildResult.Error != nil {
+		logger.L.Err(clientBuildResult.Error).Msg("Error occured building file")
+		return renderErrorHTMLString(clientBuildResult.Error)
 	}
-	// Update the dependencies for the react file
-	updateParentFileDependencies(reactFilePath, dependencies)
+
+	if serverBuildResult.Error != nil {
+		logger.L.Err(serverBuildResult.Error).Msg("Error occured building server rendered file")
+		return renderErrorHTMLString(serverBuildResult.Error)
+	}
+
+	go updateParentFileDependencies(reactFilePath, clientBuildResult.Dependencies)
 	// Return the rendered html
 	return renderHTMLString(HTMLParams{
 		Title:      renderConfig.Title,
 		MetaTags:   getMetaTags(renderConfig.MetaTags),
 		OGMetaTags: getOGMetaTags(renderConfig.MetaTags),
 		Links:      renderConfig.Links,
-		JS:         template.JS(builtReactFile.CompiledJS),
-		CSS:        template.CSS(builtReactFile.CompiledCSS),
+		JS:         template.JS(clientBuildResult.JS),
+		CSS:        template.CSS(serverBuildResult.CSS),
 		RouteID:    routeID,
+		ServerHTML: template.HTML(serverBuildResult.HTML),
 	})
 }
 

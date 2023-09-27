@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math/rand"
+
 	"example.com/gin/models"
 
 	"github.com/gin-gonic/gin"
@@ -11,10 +13,12 @@ import (
 
 func main() {
 	g := gin.Default()
-	g.StaticFile("favicon.ico", "../frontend/public/favicon.ico")
+	g.StaticFile("favicon.ico", "../frontend-tailwind/public/favicon.ico")
 	go_ssr.Init(config.Config{
-		FrontendDir:        "../frontend/src",
-		GeneratedTypesPath: "../frontend/src/generated.d.ts",
+		FrontendDir:        "../frontend-tailwind/src",
+		GeneratedTypesPath: "../frontend-tailwind/src/generated.d.ts",
+		TailwindConfigPath: "../frontend-tailwind/tailwind.config.js",
+		GlobalCSSFilePath:  "../frontend-tailwind/src/Main.css",
 		PropsStructsPath:   "./models/props.go",
 	})
 
@@ -27,7 +31,7 @@ func main() {
 				"description": "Hello world!",
 			},
 			Props: &models.IndexRouteProps{
-				InitialCount: 1,
+				InitialCount: rand.Intn(100),
 			},
 		}))
 	})
