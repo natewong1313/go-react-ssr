@@ -2,7 +2,6 @@ package react_renderer
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -54,12 +53,11 @@ func buildForServer(reactFilePath, props string, c chan<- ServerBuildResult) {
 
 	// exec code with node
 	node := exec.Command("node", "-e", string(buildResult.OutputFiles[0].Contents))
-	var outb, errb bytes.Buffer
+	var outb bytes.Buffer
 
 	node.Stdout = &outb
-	node.Stderr = &errb
 	if err := node.Run(); err != nil {
-		c <- ServerBuildResult{Error: errors.New(errb.String())}
+		c <- ServerBuildResult{Error: err}
 		return
 	}
 	c <- ServerBuildResult{HTML: outb.String(), CSS: css}
