@@ -31,6 +31,8 @@ Go-SSR was developed due to a lack of an existing product in the Go ecosystem th
 
 # 🛠️ Getting Started
 
+Go-SSR was designed with the idea of being dead simple to install. Below are 2 easy ways of setting it up:
+
 ## ⚡️ Using the CLI tool
 
 <img src="https://i.imgur.com/mygp5BT.png" height="400" />
