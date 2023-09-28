@@ -26,7 +26,7 @@ func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
 			import App from "./%s";
 			const props = %s
 			ReactDOM.hydrate(<App {...props} />, document.getElementById("root"));`,
-				globalCssImport, filepath.Base(reactFilePath), props),
+				globalCssImport, filepath.ToSlash(filepath.Base(reactFilePath)), props),
 			Loader:     getLoaderType(reactFilePath),
 			ResolveDir: config.C.FrontendDir,
 		},
@@ -55,7 +55,7 @@ func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
 	c <- ClientBuildResult{JS: compiledJS, Dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}
 }
 
-// Get the esbuild loader type for the react file, dependeing on the file extension
+// Get the esbuild loader type for the React file, depending on the file extension
 func getLoaderType(reactFilePath string) esbuildApi.Loader {
 	loader := esbuildApi.LoaderTSX
 	if strings.HasSuffix(reactFilePath, ".ts") {

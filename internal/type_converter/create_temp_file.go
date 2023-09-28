@@ -26,7 +26,7 @@ func createCacheFolder() (string, error) {
 
 // https://github.com/tkrajina/typescriptify-golang-structs/blob/master/tscriptify/main.go#L139
 func createTemporaryFile(folderPath string, structNames []string) (string, error) {
-	temporaryFilePath := filepath.Join(folderPath, "generator.go")
+	temporaryFilePath := filepath.ToSlash(filepath.Join(folderPath, "generator.go"))
 	file, err := os.Create(temporaryFilePath)
 	if err != nil {
 		return temporaryFilePath, err
@@ -63,7 +63,7 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 
 // getModuleName gets the module name of the props structs file
 func getModuleName(propsStructsPath string) (string, error) {
-	dir := filepath.Dir(utils.GetFullFilePath(propsStructsPath))
+	dir := filepath.ToSlash(filepath.Dir(utils.GetFullFilePath(propsStructsPath)))
 	cmd := exec.Command("go", "list")
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()

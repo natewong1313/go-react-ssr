@@ -1,6 +1,6 @@
 module github.com/natewong1313/go-react-ssr/gossr-cli
 
-go 1.21.1
+go 1.20
 
 require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be

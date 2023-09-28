@@ -55,7 +55,7 @@ func createTempCSSFolder() (string, error) {
 // Create the temporary css file and copy the contents of the specified global css file to it
 func createTempCSSFile() (string, error) {
 	globalCssPath := utils.GetFullFilePath(config.C.GlobalCSSFilePath)
-	tempFilePath := filepath.Join(tempCssFolderPath, "gossr-temporary.css")
+	tempFilePath := filepath.ToSlash(filepath.Join(tempCssFolderPath, "gossr-temporary.css"))
 	tempFile, err := os.Create(tempFilePath)
 	if err != nil {
 		return "", err

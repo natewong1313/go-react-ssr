@@ -23,7 +23,7 @@ func RenderRoute(renderConfig Config) []byte {
 		logger.L.Err(err).Msg("Failed to convert props to JSON")
 		return renderErrorHTMLString(err)
 	}
-	// Get the full path of the react component file
+	// Get the full path of the React component file
 	reactFilePath := utils.GetFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)
 	// Update the routeID to file map
 	go updateRouteIDToReactFileMap(routeID, reactFilePath)
