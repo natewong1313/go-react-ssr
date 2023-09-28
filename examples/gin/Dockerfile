@@ -10,14 +10,14 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-w" -a -o main
 
 FROM node:16-alpine as build-frontend
 
-ADD ./frontend /frontend
-WORKDIR /frontend
+ADD ./frontend-tailwind /frontend-tailwind
+WORKDIR /frontend-tailwind
 
 RUN npm install
 
-FROM alpine:latest
+FROM node:16-alpine
 COPY --from=build-backend /build/main ./app/main
-COPY --from=build-frontend /frontend ./app/frontend
+COPY --from=build-frontend /frontend-tailwind ./app/frontend-tailwind
 
 WORKDIR /app
 RUN chmod +x ./main
