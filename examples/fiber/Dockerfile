@@ -4,6 +4,7 @@ ADD . /build
 WORKDIR /build
 
 RUN go mod download
+RUN go get -u github.com/natewong1313/go-react-ssr
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-w" -a -o main
 
 
