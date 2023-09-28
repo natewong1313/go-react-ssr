@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/creasty/defaults"
-	"github.com/joho/godotenv"
 	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/hot_reload"
 	"github.com/natewong1313/go-react-ssr/internal/logger"
@@ -14,11 +13,6 @@ import (
 
 // Init starts the Go SSR plugin
 func Init(optionalCfg ...config.Config) error {
-	// Load .env file if it exists
-	if err := godotenv.Load(); err != nil {
-		logger.L.Err(err).Msg("Error loading .env file")
-	}
-
 	// Initialize logger globally
 	logger.Init()
 	// Get config if it was passed to the function
@@ -28,6 +22,7 @@ func Init(optionalCfg ...config.Config) error {
 		logger.L.Err(err).Msg("Failed to set defaults")
 		return err
 	}
+	os.Setenv("APP_ENV", cfg.AppEnv)
 
 	// Load config in to global variable
 	if err := config.Load(*cfg); err != nil {

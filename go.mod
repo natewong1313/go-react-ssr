@@ -23,7 +23,6 @@ require (
 )
 
 require (
-	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/tkrajina/go-reflector v0.5.5 // indirect
 	golang.org/x/sys v0.12.0 // indirect
