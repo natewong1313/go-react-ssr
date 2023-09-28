@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math/rand"
+
 	"example.com/fiber/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
@@ -33,7 +35,7 @@ func main() {
 				"description": "Hello world!",
 			},
 			Props: &models.IndexRouteProps{
-				InitialCount: 1,
+				InitialCount: rand.Intn(100),
 			},
 		})
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
