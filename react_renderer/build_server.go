@@ -7,9 +7,11 @@ import (
 	"github.com/dop251/goja"
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
 	"github.com/natewong1313/go-react-ssr/config"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
 func buildForServer(reactFilePath, props string, c chan<- ServerBuildResult) {
+	defer utils.Timer("buildForServer")()
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
 			Contents: fmt.Sprintf(`import { renderToString } from "react-dom/server";

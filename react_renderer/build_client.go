@@ -13,6 +13,7 @@ import (
 )
 
 func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
+	defer utils.Timer("buildForClient")()
 	globalCssImport := ""
 	if tempCssFilePath != "" {
 		globalCssImport = fmt.Sprintf(`import "%s";`, tempCssFilePath)
