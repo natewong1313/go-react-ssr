@@ -2,13 +2,13 @@ package react_renderer
 
 import "html/template"
 
-// Build stores the compiled JS and CSS for a react file
+// Build stores the compiled JS and CSS for a React file
 type Build struct {
 	CompiledJS  string
 	CompiledCSS string
 }
 
-// Config stores the configuration for a react file to be rendered
+// Config stores the configuration for a React file to be rendered
 type Config struct {
 	File     string
 	Title    string

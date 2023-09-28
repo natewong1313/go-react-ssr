@@ -41,7 +41,7 @@ func GetAllRouteIDS() []string {
 	return routes
 }
 
-// Store the react files and the depdenencies they import
+// Store the React files and the dependencies they import
 var parentFileToDependenciesMap = map[string][]string{}
 var parentFileToDependenciesMapLock = sync.RWMutex{}
 

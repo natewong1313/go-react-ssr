@@ -55,7 +55,7 @@ func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
 	c <- ClientBuildResult{JS: compiledJS, Dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}
 }
 
-// Get the esbuild loader type for the react file, dependeing on the file extension
+// Get the esbuild loader type for the React file, depending on the file extension
 func getLoaderType(reactFilePath string) esbuildApi.Loader {
 	loader := esbuildApi.LoaderTSX
 	if strings.HasSuffix(reactFilePath, ".ts") {
