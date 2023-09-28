@@ -12,13 +12,8 @@ import (
 func buildForServer(reactFilePath, props string, c chan<- ServerBuildResult) {
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
-			// const App = require("%s").default;
-			// const props = %s
-			// console.log(renderToString(<App {...props} />));
 			Contents: fmt.Sprintf(`import { renderToString } from "react-dom/server";
 			import React from "react";
-	
-
 			function render() {
 				const App = require("%s").default;
 				const props = %s
@@ -58,6 +53,30 @@ func buildForServer(reactFilePath, props string, c chan<- ServerBuildResult) {
 	}
 
 	vm := goja.New()
+	err := injectTextEncoderPolyfill(vm)
+	if err != nil {
+		c <- ServerBuildResult{Error: err}
+		return
+	}
+	_, err = vm.RunString(string(buildResult.OutputFiles[0].Contents))
+	if err != nil {
+		c <- ServerBuildResult{Error: err}
+		return
+	}
+	render, ok := goja.AssertFunction(vm.Get("render"))
+	if !ok {
+		c <- ServerBuildResult{Error: err}
+		return
+	}
+	res, err := render(goja.Undefined())
+	if err != nil {
+		c <- ServerBuildResult{Error: err}
+		return
+	}
+	c <- ServerBuildResult{HTML: res.String(), CSS: css}
+}
+
+func injectTextEncoderPolyfill(vm *goja.Runtime) error {
 	_, err := vm.RunString(`function TextEncoder() {
 	}
 	
@@ -131,40 +150,6 @@ func buildForServer(reactFilePath, props string, c chan<- ServerBuildResult) {
 		i += bytesNeeded + 1;
 	  }
 	  return string
-	};
-	(function(global) {
-		'use strict';
-		if (!global.console) {
-		  global.console = {};
-		}
-		var con = global.console;
-		var prop, method;
-		var dummy = function() {};
-		var properties = ['memory'];
-		var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
-		   'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
-		   'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn,timeLog,trace').split(',');
-		while (prop = properties.pop()) if (!con[prop]) con[prop] = {};
-		while (method = methods.pop()) if (!con[method]) con[method] = dummy;
-	  })(typeof window === 'undefined' ? this : window);`)
-	if err != nil {
-		c <- ServerBuildResult{Error: err}
-		return
-	}
-	_, err = vm.RunString(string(buildResult.OutputFiles[0].Contents))
-	if err != nil {
-		c <- ServerBuildResult{Error: err}
-		return
-	}
-	render, ok := goja.AssertFunction(vm.Get("render"))
-	if !ok {
-		c <- ServerBuildResult{Error: err}
-		return
-	}
-	res, err := render(goja.Undefined())
-	if err != nil {
-		c <- ServerBuildResult{Error: err}
-		return
-	}
-	c <- ServerBuildResult{HTML: res.String(), CSS: css}
+	};`)
+	return err
 }
