@@ -11,10 +11,13 @@ import (
 	"github.com/natewong1313/go-react-ssr/react_renderer"
 )
 
+var APP_ENV string
+
 func main() {
 	g := gin.Default()
 	g.StaticFile("favicon.ico", "../frontend-tailwind/public/favicon.ico")
 	go_ssr.Init(config.Config{
+		AppEnv:             APP_ENV,
 		FrontendDir:        "../frontend-tailwind/src",
 		GeneratedTypesPath: "../frontend-tailwind/src/generated.d.ts",
 		TailwindConfigPath: "../frontend-tailwind/tailwind.config.js",
@@ -35,5 +38,5 @@ func main() {
 			},
 		}))
 	})
-	g.Run("127.0.0.1:8080")
+	g.Run()
 }

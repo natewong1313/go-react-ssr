@@ -12,6 +12,8 @@ import (
 	"github.com/natewong1313/go-react-ssr/react_renderer"
 )
 
+var APP_ENV string
+
 func main() {
 	app := fiber.New()
 	app.Use(logger.New())
@@ -21,6 +23,7 @@ func main() {
 	}))
 
 	go_ssr.Init(config.Config{
+		AppEnv:             APP_ENV,
 		FrontendDir:        "../frontend/src",
 		GeneratedTypesPath: "../frontend/src/generated.d.ts",
 		PropsStructsPath:   "./models/props.go",
