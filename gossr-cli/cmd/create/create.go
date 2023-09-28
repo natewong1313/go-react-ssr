@@ -32,7 +32,7 @@ func create(cmd *cobra.Command, args []string) {
 
 	projectDirExists := utils.CheckPathExists(projectDir)
 	if projectDirExists {
-		projectDirEmpty := !utils.CheckPathEmpty(projectDir)
+		projectDirEmpty := utils.CheckPathEmpty(projectDir)
 		if !projectDirEmpty && !prompt_shouldWipeDirectory() {
 			os.Exit(0)
 		} else {

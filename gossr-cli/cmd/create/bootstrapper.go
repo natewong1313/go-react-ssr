@@ -62,13 +62,7 @@ func (b *Bootstrapper) setupFrontend(wg *sync.WaitGroup) {
 func (b *Bootstrapper) setupBackend(wg *sync.WaitGroup) {
 	b.updateGoModules()
 	b.replaceImportsInGoFile()
-	// projectFolderName := filepath.Base(b.ProjectDir)
-	// b.GoModuleName = "example.com/" + strings.Replace(projectFolderName, " ", "-", -1)
-	// logger.L.Debug().Msgf("Creating go module %s", b.GoModuleName)
-
-	// b.createFileInFolder("main.go", "")
-
-	// logger.L.Info().Msg("Backend setup complete")
+	b.updateDockerFile()
 	wg.Done()
 }
 
@@ -86,12 +80,6 @@ func (b *Bootstrapper) createFrontendFolder() {
 
 func (b *Bootstrapper) installNPMDependencies() {
 	logger.L.Info().Msg("Installing npm dependencies")
-	// args := []string{"install", "typescript", "--save-dev"}
-	// if b.IsUsingTailwind {
-	// 	args = append(args, "tailwindcss")
-	// 	args = append(args, "--save-dev")
-	// }
-	// cmd := exec.Command("npm", args...)
 	cmd := exec.Command("npm", "install")
 	cmd.Dir = b.ProjectDir + "/frontend"
 	err := cmd.Run()
@@ -119,6 +107,23 @@ func (b *Bootstrapper) replaceImportsInGoFile() {
 	newContents := strings.Replace(string(read), "../frontend", "./frontend", -1)
 	newContents = strings.Replace(newContents, "-tailwind/", "/", -1)
 	err = os.WriteFile(b.ProjectDir+"/main.go", []byte(newContents), 0644)
+	if err != nil {
+		utils.HandleError(err)
+	}
+}
+
+func (b *Bootstrapper) updateDockerFile() {
+	logger.L.Info().Msg("Updating Dockerfile")
+	read, err := os.ReadFile(b.ProjectDir + "/Dockerfile")
+	if err != nil {
+		utils.HandleError(err)
+	}
+	var contents string
+	if b.IsUsingTailwind {
+		contents = strings.Replace(string(read), "frontend-tailwind", "frontend", -1)
+		contents = strings.Replace(string(read), "FROM alpine:latest", "FROM node:16-alpine", -1)
+	}
+	err = os.WriteFile(b.ProjectDir+"/Dockerfile", []byte(contents), 0644)
 	if err != nil {
 		utils.HandleError(err)
 	}
