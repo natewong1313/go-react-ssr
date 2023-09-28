@@ -26,7 +26,7 @@ func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
 			import App from "./%s";
 			const props = %s
 			ReactDOM.hydrate(<App {...props} />, document.getElementById("root"));`,
-				globalCssImport, filepath.Base(reactFilePath), props),
+				globalCssImport, filepath.ToSlash(filepath.Base(reactFilePath)), props),
 			Loader:     getLoaderType(reactFilePath),
 			ResolveDir: config.C.FrontendDir,
 		},

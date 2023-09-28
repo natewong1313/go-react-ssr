@@ -1,6 +1,6 @@
 module github.com/natewong1313/go-react-ssr
 
-go 1.21.0
+go 1.20
 
 require (
 	github.com/buger/jsonparser v1.1.1

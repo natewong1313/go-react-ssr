@@ -17,7 +17,7 @@ func main() {
 {{ end }}
 {{ range .CustomImports }}	t.AddImport("{{ . }}")
 {{ end }}
-	err := t.ConvertToFile("{{ .TargetFile }}")
+	err := t.ConvertToFile(` + "`{{ .TargetFile }}`" + `)
 	if err != nil {
 		panic(err.Error())
 	}

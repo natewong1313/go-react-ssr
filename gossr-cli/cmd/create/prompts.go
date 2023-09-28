@@ -16,6 +16,7 @@ func prompt_getProjectDirectory(args []string) string {
 	}
 	if len(args) > 0 {
 		projectDir, err := filepath.Abs(args[0])
+		projectDir = filepath.ToSlash(projectDir)
 		if err != nil {
 			utils.HandleError(err)
 		}
@@ -31,6 +32,7 @@ func prompt_getProjectDirectory(args []string) string {
 	if err != nil {
 		utils.HandleError(err)
 	}
+	projectDir = filepath.ToSlash(projectDir)
 	return display(projectDir)
 }
 
