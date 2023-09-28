@@ -10,12 +10,12 @@ const HTML_TEMPLATE = `<!DOCTYPE html>
 	{{range $k, $v := .OGMetaTags}} <meta property="{{$k}}" content="{{$v}}" /> {{end}}
 	{{range .Links}}<link href="{{.Href}}" rel="{{.Rel}}" media="{{.Media}}" hreflang="{{.Hreflang}}" type="{{.Type}}" title="{{.Title}}" />{{end}}
 	<link rel="icon" href="/favicon.ico" />
-  </head>
-  <body>
-	<div id="root">{{ .ServerHTML }}</div>
 	<style>
 	  {{ .CSS }}}
 	</style>
+  </head>
+  <body>
+	<div id="root">{{ .ServerHTML }}</div>
 	<script>
 	  function showError(error) {
 		document.getElementById(
