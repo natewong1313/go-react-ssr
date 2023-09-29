@@ -39,10 +39,10 @@ func buildClientJS(reactFilePath string) (ClientBuild, error) {
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
 			Contents: fmt.Sprintf(`import * as React from "react";
-			import * as ReactDOM from "react-dom";
+			import { hydrateRoot } from "react-dom/client";
 			%s
 			import App from "./%s";
-			ReactDOM.hydrate(<App {...window.props} />, document.getElementById("root"));`,
+			hydrateRoot(document.getElementById("root"), <App {...window.props} />);`,
 				globalCssImport, filepath.ToSlash(filepath.Base(reactFilePath))),
 			Loader:     getLoaderType(reactFilePath),
 			ResolveDir: config.C.FrontendDir,
