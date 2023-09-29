@@ -21,9 +21,11 @@ func main() {
 		File: "../frontend/public/favicon.ico",
 		URL:  "/favicon.ico",
 	}))
+	app.Static("/assets", "../frontend/public/")
 
 	go_ssr.Init(config.Config{
 		AppEnv:             APP_ENV,
+		AssetRoute:         "/assets",
 		FrontendDir:        "../frontend/src",
 		GeneratedTypesPath: "../frontend/src/generated.d.ts",
 		PropsStructsPath:   "./models/props.go",

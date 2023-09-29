@@ -50,13 +50,14 @@ func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, er
 		MinifyIdentifiers: true,
 		MinifySyntax:      true,
 		Outdir:            "/",
+		AssetNames:        fmt.Sprintf("%s/[name]", strings.TrimPrefix(config.C.AssetRoute, "/")),
 		Loader: map[string]esbuildApi.Loader{ // for loading images properly
-			".png":  esbuildApi.LoaderDataURL,
-			".svg":  esbuildApi.LoaderDataURL,
-			".jpg":  esbuildApi.LoaderDataURL,
-			".jpeg": esbuildApi.LoaderDataURL,
-			".gif":  esbuildApi.LoaderDataURL,
-			".bmp":  esbuildApi.LoaderDataURL,
+			".png":  esbuildApi.LoaderFile,
+			".svg":  esbuildApi.LoaderFile,
+			".jpg":  esbuildApi.LoaderFile,
+			".jpeg": esbuildApi.LoaderFile,
+			".gif":  esbuildApi.LoaderFile,
+			".bmp":  esbuildApi.LoaderFile,
 		},
 	})
 
@@ -64,14 +65,16 @@ func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, er
 		return ServerRendererBuild{}, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
 	}
 
+	var js string
 	var css string
 	for _, file := range buildResult.OutputFiles {
-		if strings.HasSuffix(file.Path, ".css") {
+		if strings.HasSuffix(file.Path, "stdin.js") {
+			js = string(file.Contents)
+		} else if strings.HasSuffix(file.Path, "stdin.css") {
 			css = string(file.Contents)
-			break
 		}
 	}
-	return ServerRendererBuild{JS: string(buildResult.OutputFiles[0].Contents), CSS: css}, nil
+	return ServerRendererBuild{JS: js, CSS: css}, nil
 }
 
 func renderReactToHTML(rendererJS, props string) (string, error) {

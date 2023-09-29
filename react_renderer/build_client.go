@@ -53,21 +53,30 @@ func buildClientJS(reactFilePath string) (ClientBuild, error) {
 		MinifySyntax:      os.Getenv("APP_ENV") == "production",
 		Metafile:          true,
 		Outdir:            "/", // This is ignored because we are using the metafile
+		AssetNames:        "assets/[name]",
 		Loader: map[string]esbuildApi.Loader{ // for loading images properly
-			".png":  esbuildApi.LoaderDataURL,
-			".svg":  esbuildApi.LoaderDataURL,
-			".jpg":  esbuildApi.LoaderDataURL,
-			".jpeg": esbuildApi.LoaderDataURL,
-			".gif":  esbuildApi.LoaderDataURL,
-			".bmp":  esbuildApi.LoaderDataURL,
+			".png":  esbuildApi.LoaderFile,
+			".svg":  esbuildApi.LoaderFile,
+			".jpg":  esbuildApi.LoaderFile,
+			".jpeg": esbuildApi.LoaderFile,
+			".gif":  esbuildApi.LoaderFile,
+			".bmp":  esbuildApi.LoaderFile,
 		},
 	})
 	if len(buildResult.Errors) > 0 {
 		// Return formatted error
 		return ClientBuild{}, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
 	}
+
+	var js string
+	for _, file := range buildResult.OutputFiles {
+		if strings.HasSuffix(file.Path, "stdin.js") {
+			js = string(file.Contents)
+			break
+		}
+	}
 	// Return the compiled build
-	return ClientBuild{JS: string(buildResult.OutputFiles[0].Contents), Dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}, nil
+	return ClientBuild{JS: js, Dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}, nil
 }
 
 // Inject the props into the compiled JS

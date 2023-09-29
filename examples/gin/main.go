@@ -16,8 +16,10 @@ var APP_ENV string
 func main() {
 	g := gin.Default()
 	g.StaticFile("favicon.ico", "../frontend-tailwind/public/favicon.ico")
+	g.Static("/assets", "../frontend-tailwind/public")
 	go_ssr.Init(config.Config{
 		AppEnv:             APP_ENV,
+		AssetRoute:         "/assets",
 		FrontendDir:        "../frontend-tailwind/src",
 		GeneratedTypesPath: "../frontend-tailwind/src/generated.d.ts",
 		TailwindConfigPath: "../frontend-tailwind/tailwind.config.js",
