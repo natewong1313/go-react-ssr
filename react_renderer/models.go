@@ -45,10 +45,20 @@ type ErrorParams struct {
 	Error string
 }
 
+type ClientBuild struct {
+	JS           string
+	Dependencies []string
+}
+
 type ClientBuildResult struct {
 	JS           string
 	Dependencies []string
 	Error        error
+}
+
+type ServerRendererBuild struct {
+	JS  string
+	CSS string
 }
 
 type ServerBuildResult struct {

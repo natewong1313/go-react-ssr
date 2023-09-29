@@ -10,19 +10,38 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-func buildForServer(reactFilePath, props string, c chan<- ServerBuildResult) {
-	defer utils.Timer("buildForServer")()
+func serverRenderReactFile(reactFilePath, props string, serverBuildResultChan chan<- ServerBuildResult) {
+	// Check if the build is cached
+	serverRendererBuild, ok := getCachedServerBuild(reactFilePath)
+	if !ok {
+		var err error
+		serverRendererBuild, err = buildReactServerRendererFile(reactFilePath)
+		if err != nil {
+			serverBuildResultChan <- ServerBuildResult{Error: err}
+			return
+		}
+		setCachedServerBuild(reactFilePath, serverRendererBuild)
+	}
+	serverHTML, err := renderReactToHTML(serverRendererBuild.JS, props)
+	if err != nil {
+		serverBuildResultChan <- ServerBuildResult{Error: err}
+		return
+	}
+	serverBuildResultChan <- ServerBuildResult{HTML: serverHTML, CSS: serverRendererBuild.CSS}
+}
+
+func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, error) {
+	defer utils.Timer("buildReactServerRendererFile")()
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
 			Contents: fmt.Sprintf(`import { renderToString } from "react-dom/server";
 			import React from "react";
 			function render() {
 				const App = require("%s").default;
-				const props = %s
 				return renderToString(<App {...props} />);
 			  }
 			  globalThis.render = render;
-		  `, reactFilePath, props),
+		  `, reactFilePath),
 			Loader:     esbuildApi.LoaderTSX,
 			ResolveDir: config.C.FrontendDir,
 		},
@@ -42,40 +61,40 @@ func buildForServer(reactFilePath, props string, c chan<- ServerBuildResult) {
 	})
 
 	if len(buildResult.Errors) > 0 {
-		c <- ServerBuildResult{Error: fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)}
-		return
+		return ServerRendererBuild{}, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
 	}
 
 	var css string
 	for _, file := range buildResult.OutputFiles {
-		if strings.HasSuffix(string(file.Path), ".css") {
+		if strings.HasSuffix(file.Path, ".css") {
 			css = string(file.Contents)
 			break
 		}
 	}
+	return ServerRendererBuild{JS: string(buildResult.OutputFiles[0].Contents), CSS: css}, nil
+}
 
+func renderReactToHTML(rendererJS, props string) (string, error) {
+	defer utils.Timer("renderReactToHTML")()
 	vm := goja.New()
 	err := injectTextEncoderPolyfill(vm)
 	if err != nil {
-		c <- ServerBuildResult{Error: err}
-		return
+		return "", err
 	}
-	_, err = vm.RunString(string(buildResult.OutputFiles[0].Contents))
+	_, err = vm.RunString(rendererJS + fmt.Sprintf(`
+var props = %s;`, props))
 	if err != nil {
-		c <- ServerBuildResult{Error: err}
-		return
+		return "", err
 	}
 	render, ok := goja.AssertFunction(vm.Get("render"))
 	if !ok {
-		c <- ServerBuildResult{Error: err}
-		return
+		return "", fmt.Errorf("render is not a function")
 	}
 	res, err := render(goja.Undefined())
 	if err != nil {
-		c <- ServerBuildResult{Error: err}
-		return
+		return "", err
 	}
-	c <- ServerBuildResult{HTML: res.String(), CSS: css}
+	return res.String(), nil
 }
 
 func injectTextEncoderPolyfill(vm *goja.Runtime) error {

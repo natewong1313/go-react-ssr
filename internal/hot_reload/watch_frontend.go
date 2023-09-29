@@ -29,7 +29,7 @@ func WatchForFileChanges() {
 		case event := <-watcher.Events:
 			// Watch for file created, deleted, updated, or renamed events
 			if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "gossr-temporary") {
-				filePath := event.Name
+				filePath := utils.GetFullFilePath(event.Name)
 				logger.L.Info().Msgf("File changed: %s, reloading", filePath)
 				// Store the routes that need to be reloaded
 				var routeIDS []string
@@ -43,6 +43,11 @@ func WatchForFileChanges() {
 				default:
 					// Get all route ids that use that file or have it as a dependency
 					routeIDS = react_renderer.GetRouteIDSWithFile(filePath)
+				}
+				parentFiles := react_renderer.GetParentFilesFromDependency(filePath)
+				for _, parentFile := range parentFiles {
+					react_renderer.RemoveCachedServerBuild(parentFile)
+					react_renderer.RemoveCachedClientBuild(parentFile)
 				}
 				// Tell all browser clients listening for those route ids to reload
 				go BroadcastFileUpdateToClients(routeIDS)

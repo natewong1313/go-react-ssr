@@ -28,23 +28,21 @@ func RenderRoute(renderConfig Config) []byte {
 	// Update the routeID to file map
 	go updateRouteIDToReactFileMap(routeID, reactFilePath)
 
-	// Build the client files and server html on different threads
-	clientBuildChan := make(chan ClientBuildResult)
-	serverBuildChan := make(chan ServerBuildResult)
+	serverBuildResultChan := make(chan ServerBuildResult)
+	clientBuildResultChan := make(chan ClientBuildResult)
 
-	go buildForClient(reactFilePath, props, clientBuildChan)
-	go buildForServer(reactFilePath, props, serverBuildChan)
-	clientBuildResult := <-clientBuildChan
-	serverBuildResult := <-serverBuildChan
+	go serverRenderReactFile(reactFilePath, props, serverBuildResultChan)
+	go makeClientBuild(reactFilePath, props, clientBuildResultChan)
 
-	if clientBuildResult.Error != nil {
-		logger.L.Err(clientBuildResult.Error).Msg("Error occured building file")
-		return renderErrorHTMLString(clientBuildResult.Error)
-	}
-
+	serverBuildResult := <-serverBuildResultChan
 	if serverBuildResult.Error != nil {
-		logger.L.Err(serverBuildResult.Error).Msg("Error occured building server rendered file")
+		logger.L.Err(serverBuildResult.Error).Msg("Error occurred building server rendered file")
 		return renderErrorHTMLString(serverBuildResult.Error)
+	}
+	clientBuildResult := <-clientBuildResultChan
+	if clientBuildResult.Error != nil {
+		logger.L.Err(clientBuildResult.Error).Msg("Error occurred building file")
+		return renderErrorHTMLString(clientBuildResult.Error)
 	}
 
 	go updateParentFileDependencies(reactFilePath, clientBuildResult.Dependencies)

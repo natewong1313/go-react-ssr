@@ -12,7 +12,24 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
+func makeClientBuild(reactFilePath, props string, clientBuildResult chan<- ClientBuildResult) {
+	// Check if the client build is cached
+	clientBuild, ok := getCachedClientBuild(reactFilePath)
+	if !ok {
+		var err error
+		clientBuild, err = buildClientJS(reactFilePath)
+		if err != nil {
+			clientBuildResult <- ClientBuildResult{Error: err}
+			return
+		}
+		setCachedClientBuild(reactFilePath, clientBuild)
+	}
+	js := injectProps(clientBuild.JS, props)
+	clientBuildResult <- ClientBuildResult{JS: js, Dependencies: clientBuild.Dependencies}
+}
+
+// Build the client JS for the given React file, without props
+func buildClientJS(reactFilePath string) (ClientBuild, error) {
 	defer utils.Timer("buildForClient")()
 	globalCssImport := ""
 	if tempCssFilePath != "" {
@@ -25,9 +42,8 @@ func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
 			import * as ReactDOM from "react-dom";
 			%s
 			import App from "./%s";
-			const props = %s
-			ReactDOM.hydrate(<App {...props} />, document.getElementById("root"));`,
-				globalCssImport, filepath.ToSlash(filepath.Base(reactFilePath)), props),
+			ReactDOM.hydrate(<App {...window.props} />, document.getElementById("root"));`,
+				globalCssImport, filepath.ToSlash(filepath.Base(reactFilePath))),
 			Loader:     getLoaderType(reactFilePath),
 			ResolveDir: config.C.FrontendDir,
 		},
@@ -48,12 +64,15 @@ func buildForClient(reactFilePath, props string, c chan<- ClientBuildResult) {
 	})
 	if len(buildResult.Errors) > 0 {
 		// Return formatted error
-		c <- ClientBuildResult{Error: fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)}
-		return
+		return ClientBuild{}, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
 	}
-	compiledJS := string(buildResult.OutputFiles[0].Contents)
 	// Return the compiled build
-	c <- ClientBuildResult{JS: compiledJS, Dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}
+	return ClientBuild{JS: string(buildResult.OutputFiles[0].Contents), Dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}, nil
+}
+
+// Inject the props into the compiled JS
+func injectProps(compiledJS, props string) string {
+	return fmt.Sprintf(`window.props = %s; %s`, props, compiledJS)
 }
 
 // Get the esbuild loader type for the React file, depending on the file extension

@@ -53,7 +53,7 @@ func updateParentFileDependencies(reactFilePath string, dependencies []string) {
 }
 
 // Returns any parent files that import the dependency
-func getParentFilesFromDependency(dependencyPath string) []string {
+func GetParentFilesFromDependency(dependencyPath string) []string {
 	parentFileToDependenciesMapLock.RLock()
 	defer parentFileToDependenciesMapLock.RUnlock()
 	var parentFilePaths []string
@@ -72,7 +72,7 @@ func getParentFilesFromDependency(dependencyPath string) []string {
 func GetRouteIDSWithFile(fileName string) []string {
 	filePath := utils.GetFullFilePath(fileName)
 	// Get the parent files that import the file as a dependency
-	reactFilesWithDependency := getParentFilesFromDependency(filePath)
+	reactFilesWithDependency := GetParentFilesFromDependency(filePath)
 	if len(reactFilesWithDependency) == 0 {
 		// If the file is not imported as a dependency, check if it is rendered directly
 		reactFilesWithDependency = []string{filePath}
