@@ -74,9 +74,10 @@ In your main function, initialize the plugin. Create a folder for your structs t
 
 ```go
 go_ssr.Init(config.Config{
-	FrontendDir:        "./frontend/src", // The React source files path
-	GeneratedTypesPath: "./frontend/src/generated.d.ts", // Where the generated prop types will be created at
-	PropsStructsPath:   "./models/props.go", // Where the Go structs for your prop types are located
+    AssetRoute:         "/assets", // The route where public assets are served from on your server
+    FrontendDir:        "../frontend-tailwind/src", // The path to your React code
+    GeneratedTypesPath: "../frontend-tailwind/src/generated.d.ts", // Where the generated Typescript types will be created
+    PropsStructsPath:   "./models/props.go", // Where your Go structs for your props are located
 })
 ```
 
@@ -98,3 +99,40 @@ g.GET("/", func(c *gin.Context) {
 	c.Writer.Write(renderedResponse)
 })
 ```
+
+# 🚀  Deploying to production
+All of the examples come with a Dockerfile that you can use to deploy to production. You can also use the [gossr-cli](#-using-the-cli-tool) to create a project with a Dockerfile.
+Below is an example Dockerfile
+    
+```Dockerfile
+FROM golang:1.21-alpine as build-backend
+RUN apk add git
+ADD . /build
+WORKDIR /build
+
+RUN go mod download
+RUN go get -u github.com/natewong1313/go-react-ssr
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-w -X main.APP_ENV=production" -a -o main
+
+
+FROM node:16-alpine as build-frontend
+
+ADD ./frontend /frontend
+WORKDIR /frontend
+
+RUN npm install
+
+# if tailwind is enabled, use "FROM node:16-alpine" instead
+FROM alpine:latest
+COPY --from=build-backend /build/main ./app/main
+COPY --from=build-frontend /frontend ./app/frontend
+
+WORKDIR /app
+RUN chmod +x ./main
+EXPOSE 8080
+CMD ["./main"]
+```
+Go SSR has been tested and deployed on the following platforms:
+* [Fly.io](https://fly.io/) - [example app](https://sparkling-smoke-7627.fly.dev/)
+* [Render](https://render.com/) - [example app](https://my-gossr-test.onrender.com/)
+* [Hop.io](https://hop.io/) - [example app](https://my-gossr-test.hop.sh/)
