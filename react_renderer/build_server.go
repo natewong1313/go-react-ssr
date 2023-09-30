@@ -7,7 +7,6 @@ import (
 	"github.com/dop251/goja"
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
 	"github.com/natewong1313/go-react-ssr/config"
-	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
 func serverRenderReactFile(reactFilePath, props string, serverBuildResultChan chan<- ServerBuildResult) {
@@ -31,7 +30,6 @@ func serverRenderReactFile(reactFilePath, props string, serverBuildResultChan ch
 }
 
 func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, error) {
-	defer utils.Timer("buildReactServerRendererFile")()
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
 			Contents: fmt.Sprintf(`import { renderToString } from "react-dom/server";
@@ -78,7 +76,6 @@ func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, er
 }
 
 func renderReactToHTML(rendererJS, props string) (string, error) {
-	defer utils.Timer("renderReactToHTML")()
 	vm := goja.New()
 	err := injectTextEncoderPolyfill(vm)
 	if err != nil {

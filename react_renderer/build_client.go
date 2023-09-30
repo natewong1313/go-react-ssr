@@ -30,7 +30,6 @@ func makeClientBuild(reactFilePath, props string, clientBuildResult chan<- Clien
 
 // Build the client JS for the given React file, without props
 func buildClientJS(reactFilePath string) (ClientBuild, error) {
-	defer utils.Timer("buildForClient")()
 	globalCssImport := ""
 	if tempCssFilePath != "" {
 		globalCssImport = fmt.Sprintf(`import "%s";`, tempCssFilePath)
