@@ -39,7 +39,7 @@ func prompt_getProjectDirectory(args []string) string {
 func prompt_selectWebFramework() string {
 	prompt := promptui.Select{
 		Label: "Select a web framework to use",
-		Items: []string{"Gin", "Fiber"},
+		Items: []string{"Gin", "Fiber", "Echo"},
 	}
 
 	_, result, err := prompt.Run()
