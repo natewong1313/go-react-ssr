@@ -4,20 +4,22 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
 // Go SSR config
 type Config struct {
-	AppEnv              string `default:"development"`
-	AssetRoute          string `default:"/assets"`
-	FrontendDir         string `default:"./frontend/src"`
-	GeneratedTypesPath  string `default:"./frontend/src/generated/types.ts"`
-	PropsStructsPath    string `default:"./api/models/props.go"`
-	GlobalCSSFilePath   string `default:""`
-	TailwindConfigPath  string `default:""`
-	HotReloadServerPort int    `default:"3001"`
+	AppEnv              string `default:"development"`                       // development or production
+	AssetRoute          string `default:"/assets"`                           // Route to serve static assets from
+	FrontendDir         string `default:"./frontend/src"`                    // Path to frontend directory
+	GeneratedTypesPath  string `default:"./frontend/src/generated/types.ts"` // Path where generated types will be written to
+	PropsStructsPath    string `default:"./api/models/props.go"`             // Path to props structs file
+	GlobalCSSFilePath   string `default:""`                                  // Path to global css file
+	TailwindConfigPath  string `default:""`                                  // Path to Tailwind config file
+	HotReloadServerPort int    `default:"3001"`                              // Port to run hot reload server on
+	LayoutFile          string `default:""`                                  // Path to layout file, used for wrapping all pages
 }
 
 var C Config
@@ -43,6 +45,13 @@ func Load(config Config) error {
 			return fmt.Errorf("tailwind config path at %s does not exist", C.TailwindConfigPath)
 		}
 	}
+	if C.LayoutFile != "" && !checkPathExists(C.LayoutFile) && !checkPathExists(path.Join(C.FrontendDir, C.LayoutFile)) {
+		return fmt.Errorf("layout file path at %s does not exist", C.LayoutFile)
+	}
+	if checkPathExists(path.Join(C.FrontendDir, C.LayoutFile)) {
+		C.LayoutFile = path.Join(C.FrontendDir, C.LayoutFile)
+	}
+	C.LayoutFile = utils.GetFullFilePath(C.LayoutFile)
 	return nil
 }
 

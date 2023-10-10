@@ -30,16 +30,24 @@ func serverRenderReactFile(reactFilePath, props string, serverBuildResultChan ch
 }
 
 func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, error) {
+	var layoutImport string
+	if config.C.LayoutFile != "" {
+		layoutImport = fmt.Sprintf(`import Layout from "%s";`, config.C.LayoutFile)
+	}
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
 			Contents: fmt.Sprintf(`import { renderToString } from "react-dom/server";
 			import React from "react";
+			%s
 			function render() {
 				const App = require("%s").default;
-				return renderToString(<App {...props} />);
+				if (typeof Layout === "undefined") {
+					return renderToString(<App {...props} />);
+				}
+				return renderToString(<Layout><App {...props} /></Layout>);
 			  }
 			  globalThis.render = render;
-		  `, reactFilePath),
+		  `, layoutImport, reactFilePath),
 			Loader:     esbuildApi.LoaderTSX,
 			ResolveDir: config.C.FrontendDir,
 		},
@@ -77,13 +85,13 @@ func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, er
 
 func renderReactToHTML(rendererJS, props string) (string, error) {
 	vm := goja.New()
-	err := injectTextEncoderPolyfill(vm)
-	if err != nil {
+	if err := injectTextEncoderPolyfill(vm); err != nil {
 		return "", err
 	}
-	_, err = vm.RunString(rendererJS + fmt.Sprintf(`
-var props = %s;`, props))
-	if err != nil {
+	if err := injectConsolePolyfill(vm); err != nil {
+		return "", err
+	}
+	if _, err := vm.RunString(rendererJS + fmt.Sprintf(`var props = %s;`, props)); err != nil {
 		return "", err
 	}
 	render, ok := goja.AssertFunction(vm.Get("render"))
@@ -172,5 +180,24 @@ func injectTextEncoderPolyfill(vm *goja.Runtime) error {
 	  }
 	  return string
 	};`)
+	return err
+}
+
+func injectConsolePolyfill(vm *goja.Runtime) error {
+	_, err := vm.RunString(`(function(global) {
+		'use strict';
+		if (!global.console) {
+		  global.console = {};
+		}
+		var con = global.console;
+		var prop, method;
+		var dummy = function() {};
+		var properties = ['memory'];
+		var methods = ('assert,clear,count,debug,dir,dirxml,error,exception,group,' +
+		   'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
+		   'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn,timeLog,trace').split(',');
+		while (prop = properties.pop()) if (!con[prop]) con[prop] = {};
+		while (method = methods.pop()) if (!con[method]) con[method] = dummy;
+	  })(typeof window === 'undefined' ? this : window);`)
 	return err
 }

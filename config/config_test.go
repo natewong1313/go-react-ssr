@@ -41,6 +41,14 @@ func TestLoad(t *testing.T) {
 			TailwindConfigPath: "test",
 			GlobalCSSFilePath:  "../examples/frontend-tailwind/src/Main.css",
 		}}, true},
+		{"test with layout file that doesnt exist", args{Config{
+			FrontendDir: "../examples/frontend-tailwind/src",
+			LayoutFile:  "test",
+		}}, true},
+		{"test with layout file that does exist", args{Config{
+			FrontendDir: "../examples/frontend-tailwind/src",
+			LayoutFile:  "Home.tsx",
+		}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
