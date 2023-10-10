@@ -34,6 +34,8 @@ func WatchForFileChanges() {
 				// Store the routes that need to be reloaded
 				var routeIDS []string
 				switch {
+				case filePath == utils.GetFullFilePath(config.C.LayoutFile): // If the layout file has been updated, reload all routes
+					routeIDS = react_renderer.GetAllRouteIDS()
 				case globalCSSFileUpdated(filePath): // If the global css file has been updated, rebuild it and reload all routes
 					react_renderer.BuildGlobalCSSFile()
 					routeIDS = react_renderer.GetAllRouteIDS()
