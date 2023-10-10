@@ -19,7 +19,6 @@ jobs:
         run: go test -v ./...
       - name: Setup Node
         uses: actions/setup-node@v3
-        working-directory: ./examples/frontend
       - name: Install npm dependencies
         working-directory: ./examples/frontend
         run: npm install
@@ -29,7 +28,6 @@ jobs:
         run: go test -v ./examples/fiber
       - name: Setup Node for tailwind example
         uses: actions/setup-node@v3
-        working-directory: ./examples/frontend-tailwind
       - name: Install npm dependencies
         working-directory: ./examples/frontend-tailwind
         run: npm install
