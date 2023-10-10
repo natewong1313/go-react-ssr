@@ -17,3 +17,9 @@ jobs:
         run: go build -v ./...
       - name: Test with the Go CLI
         run: go test -v ./...
+      - name: Test Echo example
+        run: go test -v ./examples/echo
+      - name: Test Fiber example
+        run: go test -v ./examples/fiber
+      - name: Test Gin example
+        run: go test -v ./examples/gin
