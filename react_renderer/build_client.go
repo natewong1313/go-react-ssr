@@ -35,8 +35,10 @@ func buildClientJS(reactFilePath string) (ClientBuild, error) {
 		globalCssImport = fmt.Sprintf(`import "%s";`, tempCssFilePath)
 	}
 	var layoutImport string
+	renderStatement := `hydrateRoot(document.getElementById("root"), <App {...props} />);`
 	if config.C.LayoutFile != "" {
 		layoutImport = fmt.Sprintf(`import Layout from "%s";`, config.C.LayoutFile)
+		renderStatement = `hydrateRoot(document.getElementById("root"), <Layout><App {...props} /></Layout>);`
 	}
 	// Build with esbuild
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
@@ -46,11 +48,8 @@ func buildClientJS(reactFilePath string) (ClientBuild, error) {
 			%s
 			%s
 			import App from "./%s";
-			if (typeof Layout === "undefined") {
-				hydrateRoot(document.getElementById("root"), <App {...props} />);
-			}
-			hydrateRoot(document.getElementById("root"), <Layout><App {...props} /></Layout>);`,
-				globalCssImport, layoutImport, filepath.ToSlash(filepath.Base(reactFilePath))),
+			%s`,
+				globalCssImport, layoutImport, filepath.ToSlash(filepath.Base(reactFilePath)), renderStatement),
 			Loader:     getLoaderType(reactFilePath),
 			ResolveDir: config.C.FrontendDir,
 		},

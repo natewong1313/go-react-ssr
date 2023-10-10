@@ -31,8 +31,10 @@ func serverRenderReactFile(reactFilePath, props string, serverBuildResultChan ch
 
 func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, error) {
 	var layoutImport string
+	renderStatement := `renderToString(<App {...props} />)`
 	if config.C.LayoutFile != "" {
 		layoutImport = fmt.Sprintf(`import Layout from "%s";`, config.C.LayoutFile)
+		renderStatement = `renderToString(<Layout><App {...props} /></Layout>)`
 	}
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
@@ -41,13 +43,10 @@ func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, er
 			%s
 			function render() {
 				const App = require("%s").default;
-				if (typeof Layout === "undefined") {
-					return renderToString(<App {...props} />);
-				}
-				return renderToString(<Layout><App {...props} /></Layout>);
+				return %s;
 			  }
 			  globalThis.render = render;
-		  `, layoutImport, reactFilePath),
+		  `, layoutImport, reactFilePath, renderStatement),
 			Loader:     esbuildApi.LoaderTSX,
 			ResolveDir: config.C.FrontendDir,
 		},
