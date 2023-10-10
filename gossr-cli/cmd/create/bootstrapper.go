@@ -10,11 +10,9 @@ import (
 
 	"github.com/natewong1313/go-react-ssr/gossr-cli/logger"
 	"github.com/natewong1313/go-react-ssr/gossr-cli/utils"
-	"github.com/rs/zerolog"
 )
 
 type Bootstrapper struct {
-	Logger          zerolog.Logger
 	TempDirPath     string
 	ProjectDir      string
 	GoModuleName    string
