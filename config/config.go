@@ -48,10 +48,12 @@ func Load(config Config) error {
 	if C.LayoutFile != "" && !checkPathExists(C.LayoutFile) && !checkPathExists(path.Join(C.FrontendDir, C.LayoutFile)) {
 		return fmt.Errorf("layout file path at %s does not exist", C.LayoutFile)
 	}
-	if checkPathExists(path.Join(C.FrontendDir, C.LayoutFile)) {
-		C.LayoutFile = path.Join(C.FrontendDir, C.LayoutFile)
+	if C.LayoutFile != "" {
+		if checkPathExists(path.Join(C.FrontendDir, C.LayoutFile)) {
+			C.LayoutFile = path.Join(C.FrontendDir, C.LayoutFile)
+		}
+		C.LayoutFile = utils.GetFullFilePath(C.LayoutFile)
 	}
-	C.LayoutFile = utils.GetFullFilePath(C.LayoutFile)
 	return nil
 }
 
