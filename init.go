@@ -8,7 +8,7 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/hot_reload"
 	"github.com/natewong1313/go-react-ssr/internal/logger"
 	"github.com/natewong1313/go-react-ssr/internal/type_converter"
-	"github.com/natewong1313/go-react-ssr/react_renderer"
+	"github.com/natewong1313/go-react-ssr/react"
 )
 
 // Init starts the Go SSR plugin
@@ -32,7 +32,7 @@ func Init(optionalCfg ...config.Config) error {
 
 	// Compile the global css file if it exists
 	if config.C.GlobalCSSFilePath != "" {
-		if err := react_renderer.BuildGlobalCSSFile(); err != nil {
+		if err := react.BuildGlobalCSSFile(); err != nil {
 			logger.L.Err(err).Msg("Failed to build global css file")
 			return err
 		}

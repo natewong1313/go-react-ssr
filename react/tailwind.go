@@ -1,4 +1,4 @@
-package react_renderer
+package react
 
 import (
 	"os/exec"

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	go_ssr "github.com/natewong1313/go-react-ssr"
 	"github.com/natewong1313/go-react-ssr/config"
-	"github.com/natewong1313/go-react-ssr/react_renderer"
+	"github.com/natewong1313/go-react-ssr/react"
 )
 
 var APP_ENV string
@@ -28,7 +28,7 @@ func main() {
 	})
 
 	g.GET("/", func(c *gin.Context) {
-		c.Writer.Write(react_renderer.RenderRoute(react_renderer.Config{
+		c.Writer.Write(react.RenderRoute(react.Config{
 			File:  "Home.tsx",
 			Title: "Gin example app",
 			MetaTags: map[string]string{

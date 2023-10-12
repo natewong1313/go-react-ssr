@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	go_ssr "github.com/natewong1313/go-react-ssr"
 	"github.com/natewong1313/go-react-ssr/config"
-	"github.com/natewong1313/go-react-ssr/react_renderer"
+	"github.com/natewong1313/go-react-ssr/react"
 )
 
 var APP_ENV string
@@ -32,7 +32,7 @@ func main() {
 	})
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		response := react_renderer.RenderRoute(react_renderer.Config{
+		response := react.RenderRoute(react.Config{
 			File:  "Home.tsx",
 			Title: "Fiber example app",
 			MetaTags: map[string]string{

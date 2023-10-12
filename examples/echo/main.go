@@ -10,7 +10,7 @@ import (
 	go_ssr "github.com/natewong1313/go-react-ssr"
 	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/gossr-cli/logger"
-	"github.com/natewong1313/go-react-ssr/react_renderer"
+	"github.com/natewong1313/go-react-ssr/react"
 )
 
 var APP_ENV string
@@ -34,7 +34,7 @@ func main() {
 	}
 
 	e.GET("/", func(c echo.Context) error {
-		response := react_renderer.RenderRoute(react_renderer.Config{
+		response := react.RenderRoute(react.Config{
 			File:  "Home.tsx",
 			Title: "Echo example app",
 			MetaTags: map[string]string{

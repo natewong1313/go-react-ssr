@@ -66,7 +66,7 @@ import (
 	...
 	go_ssr "github.com/natewong1313/go-react-ssr"
 	"github.com/natewong1313/go-react-ssr/config"
-	"github.com/natewong1313/go-react-ssr/react_renderer"
+	"github.com/natewong1313/go-react-ssr/react"
 )
 ```
 
@@ -85,7 +85,7 @@ Once the plugin has been initialized, you can call the `react_renderer.RenderRou
 
 ```go
 g.GET("/", func(c *gin.Context) {
-	renderedResponse := react_renderer.RenderRoute(react_renderer.Config{
+	renderedResponse := react.RenderRoute(react.Config{
 		File:  "Home.tsx", // The file name, located in FrontendDir
 		Title: "My example app", // Set the app title
 		MetaTags: map[string]string{ // Configure meta tags

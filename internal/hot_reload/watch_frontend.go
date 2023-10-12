@@ -9,7 +9,7 @@ import (
 	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/logger"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
-	"github.com/natewong1313/go-react-ssr/react_renderer"
+	"github.com/natewong1313/go-react-ssr/react"
 )
 
 var watcher *fsnotify.Watcher
@@ -35,21 +35,21 @@ func WatchForFileChanges() {
 				var routeIDS []string
 				switch {
 				case filePath == utils.GetFullFilePath(config.C.LayoutFile): // If the layout file has been updated, reload all routes
-					routeIDS = react_renderer.GetAllRouteIDS()
+					routeIDS = react.GetAllRouteIDS()
 				case globalCSSFileUpdated(filePath): // If the global css file has been updated, rebuild it and reload all routes
-					react_renderer.BuildGlobalCSSFile()
-					routeIDS = react_renderer.GetAllRouteIDS()
+					react.BuildGlobalCSSFile()
+					routeIDS = react.GetAllRouteIDS()
 				case needsTailwindRecompile(filePath): // If tailwind is enabled and a react file has been updated, rebuild the global css file and reload all routes
-					react_renderer.BuildGlobalCSSFile()
+					react.BuildGlobalCSSFile()
 					fallthrough
 				default:
 					// Get all route ids that use that file or have it as a dependency
-					routeIDS = react_renderer.GetRouteIDSWithFile(filePath)
+					routeIDS = react.GetRouteIDSWithFile(filePath)
 				}
-				parentFiles := react_renderer.GetParentFilesFromDependency(filePath)
+				parentFiles := react.GetParentFilesFromDependency(filePath)
 				for _, parentFile := range parentFiles {
-					react_renderer.RemoveCachedServerBuild(parentFile)
-					react_renderer.RemoveCachedClientBuild(parentFile)
+					react.RemoveCachedServerBuild(parentFile)
+					react.RemoveCachedClientBuild(parentFile)
 				}
 				// Tell all browser clients listening for those route ids to reload
 				go BroadcastFileUpdateToClients(routeIDS)

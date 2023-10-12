@@ -2,7 +2,7 @@ package hot_reload
 
 import (
 	"github.com/gorilla/websocket"
-	// "github.com/natewong1313/go-react-ssr/react_renderer"
+	// "github.com/natewong1313/go-react-ssr/react"
 )
 
 // Each "client" is a websocket connection that is listening for file updates for the given routeID
