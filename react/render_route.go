@@ -48,7 +48,7 @@ func RenderRoute(renderConfig Config) []byte {
 
 	go updateParentFileDependencies(reactFilePath, clientBuildResult.Dependencies)
 	// Return the rendered html
-	return html.RenderHTMLString(html.HTMLParams{
+	return html.RenderHTMLString(html.Params{
 		Title:      renderConfig.Title,
 		MetaTags:   getMetaTags(renderConfig.MetaTags),
 		OGMetaTags: getOGMetaTags(renderConfig.MetaTags),
