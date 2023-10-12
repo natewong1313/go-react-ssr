@@ -1,6 +1,7 @@
 package react
 
 import (
+	"github.com/natewong1313/go-react-ssr/internal/tailwind"
 	"io"
 	"os"
 	"path/filepath"
@@ -31,8 +32,7 @@ func BuildGlobalCSSFile() error {
 	// If tailwind is enabled, compile the global css file with tailwind and save the output to tempCssFilePath
 	if config.C.TailwindConfigPath != "" {
 		logger.L.Debug().Msg("Compiling tailwind css file")
-		_, err = compileTailwindCssFile(tempCssFilePath)
-		if err != nil {
+		if err = tailwind.Compile(tempCssFilePath); err != nil {
 			return err
 		}
 	}
