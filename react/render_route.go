@@ -3,6 +3,7 @@ package react
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/natewong1313/go-react-ssr/internal/html"
 	"html/template"
 	"runtime"
 	"strings"
@@ -21,7 +22,7 @@ func RenderRoute(renderConfig Config) []byte {
 	props, err := getProps(renderConfig.Props)
 	if err != nil {
 		logger.L.Err(err).Msg("Failed to convert props to JSON")
-		return renderErrorHTMLString(err)
+		return html.RenderErrorHTMLString(err)
 	}
 	// Get the full path of the React component file
 	reactFilePath := utils.GetFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)
@@ -37,17 +38,17 @@ func RenderRoute(renderConfig Config) []byte {
 	serverBuildResult := <-serverBuildResultChan
 	if serverBuildResult.Error != nil {
 		logger.L.Err(serverBuildResult.Error).Msg("Error occurred building server rendered file")
-		return renderErrorHTMLString(serverBuildResult.Error)
+		return html.RenderErrorHTMLString(serverBuildResult.Error)
 	}
 	clientBuildResult := <-clientBuildResultChan
 	if clientBuildResult.Error != nil {
 		logger.L.Err(clientBuildResult.Error).Msg("Error occurred building file")
-		return renderErrorHTMLString(clientBuildResult.Error)
+		return html.RenderErrorHTMLString(clientBuildResult.Error)
 	}
 
 	go updateParentFileDependencies(reactFilePath, clientBuildResult.Dependencies)
 	// Return the rendered html
-	return renderHTMLString(HTMLParams{
+	return html.RenderHTMLString(html.HTMLParams{
 		Title:      renderConfig.Title,
 		MetaTags:   getMetaTags(renderConfig.MetaTags),
 		OGMetaTags: getOGMetaTags(renderConfig.MetaTags),

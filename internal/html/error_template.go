@@ -1,4 +1,4 @@
-package templates
+package html
 
 const ERROR_TEMPLATE = `<!DOCTYPE html>
 <html>
