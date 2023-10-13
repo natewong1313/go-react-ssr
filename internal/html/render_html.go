@@ -40,8 +40,7 @@ type ErrorParams struct {
 	Error string
 }
 
-// RenderErrorHTMLString Renders the error template and passes the error message
-func RenderErrorHTMLString(e error) []byte {
+func RenderError(e error) []byte {
 	t := template.Must(template.New("").Parse(ERROR_TEMPLATE))
 	var output bytes.Buffer
 	_, filename, line, _ := runtime.Caller(1)

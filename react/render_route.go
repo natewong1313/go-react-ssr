@@ -4,49 +4,55 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/natewong1313/go-react-ssr/internal/html"
+	"github.com/natewong1313/go-react-ssr/internal/logger"
 	"html/template"
+	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/natewong1313/go-react-ssr/config"
-	"github.com/natewong1313/go-react-ssr/internal/logger"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-// Converts the given react file path to a full html page
+// RenderRoute Converts the given react file path to a full html page
 func RenderRoute(renderConfig Config) []byte {
 	// Get the program counter for the caller of this function and use that for the id
 	pc, _, _, _ := runtime.Caller(1)
 	routeID := fmt.Sprint(pc)
-	// Props are passed to the renderer as a JSON string, or set to null if no props are passed
-	props, err := getProps(renderConfig.Props)
-	if err != nil {
-		logger.L.Err(err).Msg("Failed to convert props to JSON")
-		return html.RenderErrorHTMLString(err)
+
+	task := RenderTask{
+		RouteID:           routeID,
+		FilePath:          filepath.ToSlash(utils.GetFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)),
+		RenderConfig:      renderConfig,
+		ServerBuildResult: make(chan ServerBuildResult),
+		ClientBuildResult: make(chan ClientBuildResult),
 	}
-	// Get the full path of the React component file
-	reactFilePath := utils.GetFullFilePath(config.C.FrontendDir + "/" + renderConfig.File)
+	// Props are passed to the renderer as a JSON string, or set to null if no props are passed
+	props, err := propsToString(renderConfig.Props)
+	if err != nil {
+		logger.L.Err(err).Msg("Failed to convert props")
+		return html.RenderError(err)
+	}
+	task.Props = props
 	// Update the routeID to file map
-	go updateRouteIDToReactFileMap(routeID, reactFilePath)
+	go updateRouteIDToReactFileMap(routeID, task.FilePath)
 
-	serverBuildResultChan := make(chan ServerBuildResult)
-	clientBuildResultChan := make(chan ClientBuildResult)
+	go task.ServerRender()
+	go task.ClientRender()
 
-	go serverRenderReactFile(reactFilePath, props, serverBuildResultChan)
-	go makeClientBuild(reactFilePath, props, clientBuildResultChan)
-
-	serverBuildResult := <-serverBuildResultChan
+	serverBuildResult := <-task.ServerBuildResult
 	if serverBuildResult.Error != nil {
 		logger.L.Err(serverBuildResult.Error).Msg("Error occurred building server rendered file")
-		return html.RenderErrorHTMLString(serverBuildResult.Error)
-	}
-	clientBuildResult := <-clientBuildResultChan
-	if clientBuildResult.Error != nil {
-		logger.L.Err(clientBuildResult.Error).Msg("Error occurred building file")
-		return html.RenderErrorHTMLString(clientBuildResult.Error)
+		return html.RenderError(serverBuildResult.Error)
 	}
 
-	go updateParentFileDependencies(reactFilePath, clientBuildResult.Dependencies)
+	clientBuildResult := <-task.ClientBuildResult
+	if clientBuildResult.Error != nil {
+		logger.L.Err(clientBuildResult.Error).Msg("Error occurred building client js file")
+		return html.RenderError(clientBuildResult.Error)
+	}
+
+	go updateParentFileDependencies(task.FilePath, clientBuildResult.Dependencies)
 	// Return the rendered html
 	return html.RenderHTMLString(html.Params{
 		Title:      renderConfig.Title,
@@ -61,7 +67,7 @@ func RenderRoute(renderConfig Config) []byte {
 }
 
 // Convert props to JSON string, or set to null if no props are passed
-func getProps(props interface{}) (string, error) {
+func propsToString(props interface{}) (string, error) {
 	if props != nil {
 		propsJSON, err := json.Marshal(props)
 		if err != nil {

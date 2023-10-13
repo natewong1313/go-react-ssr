@@ -9,27 +9,26 @@ import (
 	"github.com/natewong1313/go-react-ssr/config"
 )
 
-func serverRenderReactFile(reactFilePath, props string, serverBuildResultChan chan<- ServerBuildResult) {
-	// Check if the build is cached
-	serverRendererBuild, ok := getCachedServerBuild(reactFilePath)
+func (task *RenderTask) ServerRender() {
+	serverBuild, ok := getCachedServerBuild(task.FilePath)
 	if !ok {
 		var err error
-		serverRendererBuild, err = buildReactServerRendererFile(reactFilePath)
+		serverBuild, err = task.buildReactServerRendererFile()
 		if err != nil {
-			serverBuildResultChan <- ServerBuildResult{Error: err}
+			task.ServerBuildResult <- ServerBuildResult{Error: err}
 			return
 		}
-		setCachedServerBuild(reactFilePath, serverRendererBuild)
+		setCachedServerBuild(task.FilePath, serverBuild)
 	}
-	serverHTML, err := renderReactToHTML(serverRendererBuild.JS, props)
+	html, err := task.renderReactToHTML(serverBuild.JS)
 	if err != nil {
-		serverBuildResultChan <- ServerBuildResult{Error: err}
+		task.ServerBuildResult <- ServerBuildResult{Error: err}
 		return
 	}
-	serverBuildResultChan <- ServerBuildResult{HTML: serverHTML, CSS: serverRendererBuild.CSS}
+	task.ServerBuildResult <- ServerBuildResult{HTML: html, CSS: serverBuild.CSS}
 }
 
-func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, error) {
+func (task *RenderTask) buildReactServerRendererFile() (ServerRendererBuild, error) {
 	var layoutImport string
 	renderStatement := `renderToString(<App {...props} />)`
 	if config.C.LayoutFile != "" {
@@ -46,11 +45,12 @@ func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, er
 				return %s;
 			  }
 			  globalThis.render = render;
-		  `, layoutImport, reactFilePath, renderStatement),
+		  `, layoutImport, task.FilePath, renderStatement),
 			Loader:     esbuildApi.LoaderTSX,
 			ResolveDir: config.C.FrontendDir,
 		},
 		Bundle:            true,
+		Write:             false,
 		MinifyWhitespace:  true,
 		MinifyIdentifiers: true,
 		MinifySyntax:      true,
@@ -79,10 +79,11 @@ func buildReactServerRendererFile(reactFilePath string) (ServerRendererBuild, er
 			css = string(file.Contents)
 		}
 	}
+
 	return ServerRendererBuild{JS: js, CSS: css}, nil
 }
 
-func renderReactToHTML(rendererJS, props string) (string, error) {
+func (task *RenderTask) renderReactToHTML(rendererJS string) (string, error) {
 	vm := goja.New()
 	if err := injectTextEncoderPolyfill(vm); err != nil {
 		return "", err
@@ -90,7 +91,7 @@ func renderReactToHTML(rendererJS, props string) (string, error) {
 	if err := injectConsolePolyfill(vm); err != nil {
 		return "", err
 	}
-	if _, err := vm.RunString(rendererJS + fmt.Sprintf(`var props = %s;`, props)); err != nil {
+	if _, err := vm.RunString(rendererJS + fmt.Sprintf(`var props = %s;`, task.Props)); err != nil {
 		return "", err
 	}
 	render, ok := goja.AssertFunction(vm.Get("render"))

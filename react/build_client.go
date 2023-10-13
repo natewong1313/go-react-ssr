@@ -3,7 +3,6 @@ package react
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/buger/jsonparser"
@@ -12,24 +11,24 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-func makeClientBuild(reactFilePath, props string, clientBuildResult chan<- ClientBuildResult) {
+func (task *RenderTask) ClientRender() {
 	// Check if the client build is cached
-	clientBuild, ok := getCachedClientBuild(reactFilePath)
+	clientBuild, ok := getCachedClientBuild(task.FilePath)
 	if !ok {
 		var err error
-		clientBuild, err = buildClientJS(reactFilePath)
+		clientBuild, err = task.buildClientJS()
 		if err != nil {
-			clientBuildResult <- ClientBuildResult{Error: err}
+			task.ClientBuildResult <- ClientBuildResult{Error: err}
 			return
 		}
-		setCachedClientBuild(reactFilePath, clientBuild)
+		setCachedClientBuild(task.FilePath, clientBuild)
 	}
-	js := injectProps(clientBuild.JS, props)
-	clientBuildResult <- ClientBuildResult{JS: js, Dependencies: clientBuild.Dependencies}
+	js := injectProps(clientBuild.JS, task.Props)
+	task.ClientBuildResult <- ClientBuildResult{JS: js, Dependencies: clientBuild.Dependencies}
 }
 
 // Build the client JS for the given React file, without props
-func buildClientJS(reactFilePath string) (ClientBuild, error) {
+func (task *RenderTask) buildClientJS() (ClientBuild, error) {
 	globalCssImport := ""
 	if tempCssFilePath != "" {
 		globalCssImport = fmt.Sprintf(`import "%s";`, tempCssFilePath)
@@ -47,10 +46,10 @@ func buildClientJS(reactFilePath string) (ClientBuild, error) {
 			import { hydrateRoot } from "react-dom/client";
 			%s
 			%s
-			import App from "./%s";
+			import App from "%s";
 			%s`,
-				globalCssImport, layoutImport, filepath.ToSlash(filepath.Base(reactFilePath)), renderStatement),
-			Loader:     getLoaderType(reactFilePath),
+				globalCssImport, layoutImport, task.FilePath, renderStatement),
+			Loader:     getLoaderType(task.FilePath),
 			ResolveDir: config.C.FrontendDir,
 		},
 		Bundle:            true,

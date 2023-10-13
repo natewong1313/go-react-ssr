@@ -1,5 +1,14 @@
 package react
 
+type RenderTask struct {
+	RouteID           string
+	FilePath          string
+	Props             string
+	RenderConfig      Config
+	ServerBuildResult chan ServerBuildResult
+	ClientBuildResult chan ClientBuildResult
+}
+
 // Build stores the compiled JS and CSS for a React file
 type Build struct {
 	CompiledJS  string
