@@ -5,9 +5,15 @@ import (
 	"path/filepath"
 )
 
-// GetCacheDir returns the path to the cache directory
-func GetCacheDir() (string, error) {
-	return createCacheDirIfNotExists()
+// createCacheDirIfNotExists creates the user cache directory if it doesn't exist
+func createCacheDirIfNotExists() (string, error) {
+	userCacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+	gossrCacheDirPath := filepath.Join(userCacheDir, "gossr")
+	err = os.MkdirAll(gossrCacheDirPath, os.ModePerm)
+	return gossrCacheDirPath, err
 }
 
 // GetTypeConverterCacheDir returns the path to the type converter cache directory
@@ -24,13 +30,16 @@ func GetTypeConverterCacheDir() (string, error) {
 	return typeConverterCacheDir, err
 }
 
-// createCacheDirIfNotExists creates the user cache directory if it doesn't exist
-func createCacheDirIfNotExists() (string, error) {
-	userCacheDir, err := os.UserCacheDir()
+// GetServerBuildCacheDir returns the path to the server build cache directory for the given route
+func GetServerBuildCacheDir(routeName string) (string, error) {
+	cacheDir, err := createCacheDirIfNotExists()
 	if err != nil {
 		return "", err
 	}
-	gossrCacheDirPath := filepath.Join(userCacheDir, "gossr")
-	err = os.MkdirAll(gossrCacheDirPath, os.ModePerm)
-	return gossrCacheDirPath, err
+	serverBuildCacheDir := filepath.Join(cacheDir, "builds")
+	err = os.MkdirAll(serverBuildCacheDir, os.ModePerm)
+
+	routeCacheDir := filepath.Join(serverBuildCacheDir, routeName)
+	err = os.MkdirAll(routeCacheDir, os.ModePerm)
+	return routeCacheDir, err
 }

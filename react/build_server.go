@@ -2,6 +2,8 @@ package react
 
 import (
 	"fmt"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
+	"os"
 	"strings"
 
 	"github.com/dop251/goja"
@@ -51,10 +53,10 @@ func (task *RenderTask) buildReactServerRendererFile() (ServerRendererBuild, err
 		},
 		Bundle:            true,
 		Write:             false,
+		Outdir:            "/",
 		MinifyWhitespace:  true,
 		MinifyIdentifiers: true,
 		MinifySyntax:      true,
-		Outdir:            "/",
 		AssetNames:        fmt.Sprintf("%s/[name]", strings.TrimPrefix(config.C.AssetRoute, "/")),
 		Loader: map[string]esbuildApi.Loader{ // for loading images properly
 			".png":  esbuildApi.LoaderFile,
@@ -67,7 +69,13 @@ func (task *RenderTask) buildReactServerRendererFile() (ServerRendererBuild, err
 	})
 
 	if len(buildResult.Errors) > 0 {
-		return ServerRendererBuild{}, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, buildResult.Errors[0].Location.File, buildResult.Errors[0].Location.LineText)
+		fileLocation := "unknown"
+		lineNum := "unknown"
+		if buildResult.Errors[0].Location != nil {
+			fileLocation = buildResult.Errors[0].Location.File
+			lineNum = buildResult.Errors[0].Location.LineText
+		}
+		return ServerRendererBuild{}, fmt.Errorf("%s <br>in %s <br>at %s", buildResult.Errors[0].Text, fileLocation, lineNum)
 	}
 
 	var js string
@@ -78,6 +86,16 @@ func (task *RenderTask) buildReactServerRendererFile() (ServerRendererBuild, err
 		} else if strings.HasSuffix(file.Path, "stdin.css") {
 			css = string(file.Contents)
 		}
+	}
+
+	// Write js to file, future use
+	cacheDir, err := utils.GetServerBuildCacheDir(task.RenderConfig.File)
+	if err != nil {
+		return ServerRendererBuild{}, err
+	}
+	jsFilePath := fmt.Sprintf("%s/render.js", cacheDir)
+	if err := os.WriteFile(jsFilePath, []byte(js), 0644); err != nil {
+		return ServerRendererBuild{}, err
 	}
 
 	return ServerRendererBuild{JS: js, CSS: css}, nil
