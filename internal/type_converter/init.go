@@ -1,6 +1,7 @@
 package type_converter
 
 import (
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"os/exec"
 
 	"github.com/natewong1313/go-react-ssr/config"
@@ -16,12 +17,12 @@ func Init() error {
 		return err
 	}
 	// Create a folder for the temporary generator files
-	folderPath, err := createCacheFolder()
+	cacheDir, err := utils.GetTypeConverterCacheDir()
 	if err != nil {
 		return err
 	}
 	// Create the generator file
-	temporaryFilePath, err := createTemporaryFile(folderPath, structNames)
+	temporaryFilePath, err := createTemporaryFile(cacheDir, structNames)
 	if err != nil {
 		return err
 	}

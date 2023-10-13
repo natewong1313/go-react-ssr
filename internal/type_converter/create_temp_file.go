@@ -11,22 +11,9 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-// createCacheFolder creates a folder in the local cache directory to store the temporary generator file
-func createCacheFolder() (string, error) {
-	osCacheDir, _ := os.UserCacheDir()
-	cacheFolderPath := filepath.Join(osCacheDir, "gossr")
-	os.RemoveAll(cacheFolderPath)
-	err := os.MkdirAll(cacheFolderPath, os.ModePerm)
-	if err != nil {
-		return "", err
-	}
-
-	return cacheFolderPath, nil
-}
-
 // https://github.com/tkrajina/typescriptify-golang-structs/blob/master/tscriptify/main.go#L139
-func createTemporaryFile(folderPath string, structNames []string) (string, error) {
-	temporaryFilePath := filepath.ToSlash(filepath.Join(folderPath, "generator.go"))
+func createTemporaryFile(cacheDir string, structNames []string) (string, error) {
+	temporaryFilePath := filepath.ToSlash(filepath.Join(cacheDir, "generator.go"))
 	file, err := os.Create(temporaryFilePath)
 	if err != nil {
 		return temporaryFilePath, err
