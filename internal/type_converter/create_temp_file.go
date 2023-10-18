@@ -7,12 +7,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
 // https://github.com/tkrajina/typescriptify-golang-structs/blob/master/tscriptify/main.go#L139
-func createTemporaryFile(cacheDir string, structNames []string) (string, error) {
+func createTemporaryFile(structsFilePath, generatedTypesPath, cacheDir string, structNames []string) (string, error) {
 	temporaryFilePath := filepath.ToSlash(filepath.Join(cacheDir, "generator.go"))
 	file, err := os.Create(temporaryFilePath)
 	if err != nil {
@@ -33,12 +32,12 @@ func createTemporaryFile(cacheDir string, structNames []string) (string, error) 
 	var params TemplateParams
 	params.Structs = structsArr
 
-	params.ModuleName, err = getModuleName(config.C.PropsStructsPath)
+	params.ModuleName, err = getModuleName(structsFilePath)
 	if err != nil {
 		return temporaryFilePath, err
 	}
 	params.Interface = true
-	params.TargetFile = utils.GetFullFilePath(config.C.GeneratedTypesPath)
+	params.TargetFile = utils.GetFullFilePath(generatedTypesPath)
 
 	err = t.Execute(file, params)
 	if err != nil {

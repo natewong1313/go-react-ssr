@@ -1,16 +1,14 @@
 package main
 
 import (
-	"math/rand"
-	"net/http"
-
 	"example.com/echo/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	go_ssr "github.com/natewong1313/go-react-ssr"
-	"github.com/natewong1313/go-react-ssr/config"
-	"github.com/natewong1313/go-react-ssr/gossr-cli/logger"
 	"github.com/natewong1313/go-react-ssr/react"
+	"log"
+	"math/rand"
+	"net/http"
 )
 
 var APP_ENV string
@@ -20,7 +18,7 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Static("/assets", "../frontend/public/")
 
-	err := go_ssr.Init(config.Config{
+	engine, err := go_ssr.New(&go_ssr.Config{
 		AppEnv:             APP_ENV,
 		AssetRoute:         "/assets",
 		FrontendDir:        "../frontend/src",
@@ -29,12 +27,11 @@ func main() {
 		LayoutFile:         "Layout.tsx",
 	})
 	if err != nil {
-		logger.L.Err(err).Msg("Failed to init go-react-ssr")
-		return
+		log.Fatal("Failed to init go-react_old-ssr")
 	}
 
 	e.GET("/", func(c echo.Context) error {
-		response := react.RenderRoute(react.Config{
+		response := engine.RenderRoute(react.RenderConfig{
 			File:  "Home.tsx",
 			Title: "Echo example app",
 			MetaTags: map[string]string{

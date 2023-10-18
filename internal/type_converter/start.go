@@ -4,15 +4,14 @@ import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"os/exec"
 
-	"github.com/natewong1313/go-react-ssr/config"
 	_ "github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
 
-// Init starts the type converter
+// Start starts the type converter
 // It gets the name of structs in PropsStructsPath and generates a temporary file to run the type converter
-func Init() error {
+func Start(structsFilePath, generatedTypesPath string) error {
 	// Get struct names from file
-	structNames, err := getStructNamesFromFile(config.C.PropsStructsPath)
+	structNames, err := getStructNamesFromFile(structsFilePath)
 	if err != nil {
 		return err
 	}
@@ -22,7 +21,7 @@ func Init() error {
 		return err
 	}
 	// Create the generator file
-	temporaryFilePath, err := createTemporaryFile(cacheDir, structNames)
+	temporaryFilePath, err := createTemporaryFile(structsFilePath, generatedTypesPath, cacheDir, structNames)
 	if err != nil {
 		return err
 	}
