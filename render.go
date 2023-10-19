@@ -46,7 +46,7 @@ func (engine *Engine) RenderRoute(renderConfig RenderConfig) []byte {
 	}
 	serverRenderResult, clientRenderResult, err := task.Render()
 	if err != nil {
-		return html.RenderError(err)
+		return html.RenderError(err, task.routeID)
 	}
 	return html.RenderHTMLString(html.Params{
 		Title:      renderConfig.Title,
@@ -145,8 +145,12 @@ type ServerBuild struct {
 }
 
 func (rt *renderTask) buildReactServerFile() (ServerBuild, error) {
+	var layoutCSSImport string
 	var layoutImport string
 	renderStatement := `renderToString(<App {...props} />)`
+	if rt.engine.Config.LayoutCSSFilePath != "" {
+		layoutCSSImport = fmt.Sprintf(`import "%s";`, rt.engine.CachedLayoutCSSFilePath)
+	}
 	if rt.engine.Config.LayoutFilePath != "" {
 		layoutImport = fmt.Sprintf(`import Layout from "%s";`, rt.engine.Config.LayoutFilePath)
 		renderStatement = `renderToString(<Layout><App {...props} /></Layout>)`
@@ -156,12 +160,13 @@ func (rt *renderTask) buildReactServerFile() (ServerBuild, error) {
 			Contents: fmt.Sprintf(`import { renderToString } from "react-dom/server";
 			import React from "react";
 			%s
+			%s
 			function render() {
 				const App = require("%s").default;
 				return %s;
 			  }
 			  globalThis.render = render;
-		  `, layoutImport, rt.filePath, renderStatement),
+		  `, layoutCSSImport, layoutImport, rt.filePath, renderStatement),
 			Loader:     esbuildApi.LoaderTSX,
 			ResolveDir: rt.engine.Config.FrontendDir,
 		},
@@ -361,7 +366,7 @@ type ClientBuild struct {
 }
 
 func (rt *renderTask) buildReactClientFile() (ClientBuild, error) {
-	layoutCSSImport := ""
+	var layoutCSSImport string
 	if rt.engine.CachedLayoutCSSFilePath != "" {
 		layoutCSSImport = fmt.Sprintf(`import "%s";`, rt.engine.CachedLayoutCSSFilePath)
 	}
