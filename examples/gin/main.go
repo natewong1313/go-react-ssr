@@ -22,7 +22,7 @@ func main() {
 		FrontendDir:        "../frontend-tailwind/src",
 		GeneratedTypesPath: "../frontend-tailwind/src/generated.d.ts",
 		TailwindConfigPath: "../frontend-tailwind/tailwind.config.js",
-		LayoutCSSFilePath:  "../frontend-tailwind/src/Main.css",
+		LayoutCSSFilePath:  "Main.css",
 		PropsStructsPath:   "./models/props.go",
 	})
 	if err != nil {
