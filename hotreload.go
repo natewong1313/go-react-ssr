@@ -93,7 +93,7 @@ func (hr *HotReload) startWatcher() {
 				// Store the routes that need to be reloaded
 				var routeIDS []string
 				switch {
-				case filePath == utils.GetFullFilePath(hr.engine.Config.LayoutFilePath): // If the layout file has been updated, reload all routes
+				case filePath == hr.engine.Config.LayoutFilePath: // If the layout file has been updated, reload all routes
 					routeIDS = hr.engine.CacheManager.GetAllRouteIDS()
 				case hr.layoutCSSFileUpdated(filePath): // If the global css file has been updated, rebuild it and reload all routes
 					err := hr.engine.BuildLayoutCSSFile()
@@ -111,7 +111,7 @@ func (hr *HotReload) startWatcher() {
 					fallthrough
 				default:
 					// Get all route ids that use that file or have it as a dependency
-					routeIDS = hr.engine.CacheManager.GetRouteIDSForParentFile(filePath)
+					routeIDS = hr.engine.CacheManager.GetRouteIDSWithFile(filePath)
 				}
 				parentFiles := hr.engine.CacheManager.GetParentFilesFromDependency(filePath)
 				for _, parentFile := range parentFiles {

@@ -1,6 +1,8 @@
 package go_ssr
 
-import "sync"
+import (
+	"sync"
+)
 
 type CacheManager struct {
 	serverBuilds             *serverBuilds
@@ -115,6 +117,18 @@ func (cm *CacheManager) GetAllRouteIDS() []string {
 		routes = append(routes, route)
 	}
 	return routes
+}
+
+func (cm *CacheManager) GetRouteIDSWithFile(filePath string) []string {
+	reactFilesWithDependency := cm.GetParentFilesFromDependency(filePath)
+	if len(reactFilesWithDependency) == 0 {
+		reactFilesWithDependency = []string{filePath}
+	}
+	var routeIDS []string
+	for _, reactFile := range reactFilesWithDependency {
+		routeIDS = append(routeIDS, cm.GetRouteIDSForParentFile(reactFile)...)
+	}
+	return routeIDS
 }
 
 type parentFileToDependencies struct {
