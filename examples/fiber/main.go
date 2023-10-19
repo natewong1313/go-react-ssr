@@ -1,15 +1,14 @@
 package main
 
 import (
+	"log"
 	"math/rand"
 
 	"example.com/fiber/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	go_ssr "github.com/natewong1313/go-react-ssr"
-	"github.com/natewong1313/go-react-ssr/config"
-	"github.com/natewong1313/go-react-ssr/react"
+	gossr "github.com/natewong1313/go-react-ssr"
 )
 
 var APP_ENV string
@@ -23,16 +22,19 @@ func main() {
 	}))
 	app.Static("/assets", "../frontend/public/")
 
-	go_ssr.Init(config.Config{
+	engine, err := gossr.New(gossr.Config{
 		AppEnv:             APP_ENV,
 		AssetRoute:         "/assets",
 		FrontendDir:        "../frontend/src",
 		GeneratedTypesPath: "../frontend/src/generated.d.ts",
 		PropsStructsPath:   "./models/props.go",
 	})
+	if err != nil {
+		log.Fatal("Failed to init go-react-ssr")
+	}
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		response := react.RenderRoute(react.Config{
+		response := engine.RenderRoute(gossr.RenderConfig{
 			File:  "Home.tsx",
 			Title: "Fiber example app",
 			MetaTags: map[string]string{
