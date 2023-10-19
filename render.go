@@ -8,7 +8,6 @@ import (
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
 	"github.com/natewong1313/go-react-ssr/internal/html"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
-	"github.com/natewong1313/go-react-ssr/react"
 	"github.com/rs/zerolog"
 	"html/template"
 	"os"
@@ -17,26 +16,33 @@ import (
 	"strings"
 )
 
-type RenderTask struct {
-	Engine             *Engine
-	Logger             zerolog.Logger
-	RouteID            string
-	FilePath           string
-	Props              string
-	Config             react.RenderConfig
-	ServerRenderResult chan ServerRenderResult
-	ClientRenderResult chan ClientRenderResult
+type RenderConfig struct {
+	File     string
+	Title    string
+	MetaTags map[string]string
+	Props    interface{}
 }
 
-func (engine *Engine) RenderRoute(renderConfig react.RenderConfig) []byte {
-	task := RenderTask{
-		Engine:             engine,
-		Logger:             zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
-		RouteID:            getRouteID(),
-		FilePath:           filepath.ToSlash(utils.GetFullFilePath(engine.Config.FrontendDir + "/" + renderConfig.File)),
-		Config:             renderConfig,
-		ServerRenderResult: make(chan ServerRenderResult),
-		ClientRenderResult: make(chan ClientRenderResult),
+type renderTask struct {
+	engine             *Engine
+	logger             zerolog.Logger
+	routeID            string
+	filePath           string
+	props              string
+	config             RenderConfig
+	serverRenderResult chan ServerRenderResult
+	clientRenderResult chan ClientRenderResult
+}
+
+func (engine *Engine) RenderRoute(renderConfig RenderConfig) []byte {
+	task := renderTask{
+		engine:             engine,
+		logger:             zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
+		routeID:            getRouteID(),
+		filePath:           filepath.ToSlash(utils.GetFullFilePath(engine.Config.FrontendDir + "/" + renderConfig.File)),
+		config:             renderConfig,
+		serverRenderResult: make(chan ServerRenderResult),
+		clientRenderResult: make(chan ClientRenderResult),
 	}
 	serverRenderResult, clientRenderResult, err := task.Render()
 	if err != nil {
@@ -46,10 +52,10 @@ func (engine *Engine) RenderRoute(renderConfig react.RenderConfig) []byte {
 		Title:      renderConfig.Title,
 		MetaTags:   getMetaTags(renderConfig.MetaTags),
 		OGMetaTags: getOGMetaTags(renderConfig.MetaTags),
-		JS:         template.JS(clientRenderResult.JS),
-		CSS:        template.CSS(serverRenderResult.CSS),
-		RouteID:    task.RouteID,
-		ServerHTML: template.HTML(serverRenderResult.HTML),
+		JS:         template.JS(clientRenderResult.js),
+		CSS:        template.CSS(serverRenderResult.css),
+		RouteID:    task.routeID,
+		ServerHTML: template.HTML(serverRenderResult.html),
 	})
 }
 
@@ -78,28 +84,28 @@ func getOGMetaTags(metaTags map[string]string) map[string]string {
 	return newMetaTags
 }
 
-func (rt *RenderTask) Render() (ServerRenderResult, ClientRenderResult, error) {
-	props, err := propsToString(rt.Config.Props)
+func (rt *renderTask) Render() (ServerRenderResult, ClientRenderResult, error) {
+	props, err := propsToString(rt.config.Props)
 	if err != nil {
 		return ServerRenderResult{}, ClientRenderResult{}, err
 	}
-	rt.Props = props
+	rt.props = props
 
-	rt.Engine.Cache.SetParentFile(rt.RouteID, rt.FilePath)
+	rt.engine.CacheManager.SetParentFile(rt.routeID, rt.filePath)
 
 	go rt.serverRender()
 	go rt.clientRender()
 
-	serverRenderResult := <-rt.ServerRenderResult
-	if serverRenderResult.Error != nil {
-		return ServerRenderResult{}, ClientRenderResult{}, serverRenderResult.Error
+	serverRenderResult := <-rt.serverRenderResult
+	if serverRenderResult.err != nil {
+		return ServerRenderResult{}, ClientRenderResult{}, serverRenderResult.err
 	}
-	clientBuildResult := <-rt.ClientRenderResult
-	if clientBuildResult.Error != nil {
-		return ServerRenderResult{}, ClientRenderResult{}, clientBuildResult.Error
+	clientBuildResult := <-rt.clientRenderResult
+	if clientBuildResult.err != nil {
+		return ServerRenderResult{}, ClientRenderResult{}, clientBuildResult.err
 	}
 
-	go rt.Engine.Cache.SetParentFileDependencies(rt.FilePath, clientBuildResult.Dependencies)
+	go rt.engine.CacheManager.SetParentFileDependencies(rt.filePath, clientBuildResult.dependencies)
 	return serverRenderResult, clientBuildResult, nil
 }
 
@@ -113,36 +119,36 @@ func propsToString(props interface{}) (string, error) {
 }
 
 type ServerRenderResult struct {
-	HTML  string
-	CSS   string
-	Error error
+	html string
+	css  string
+	err  error
 }
 
-func (rt *RenderTask) serverRender() {
-	serverBuild, ok := rt.Engine.Cache.GetServerBuild(rt.FilePath)
+func (rt *renderTask) serverRender() {
+	serverBuild, ok := rt.engine.CacheManager.GetServerBuild(rt.filePath)
 	if !ok {
 		build, err := rt.buildReactServerFile()
 		if err != nil {
-			rt.ServerRenderResult <- ServerRenderResult{Error: err}
+			rt.serverRenderResult <- ServerRenderResult{err: err}
 			return
 		}
 		serverBuild = build
-		rt.Engine.Cache.SetServerBuild(rt.FilePath, serverBuild)
+		rt.engine.CacheManager.SetServerBuild(rt.filePath, serverBuild)
 	}
-	html, err := rt.renderReactToHTML(serverBuild.JS)
-	rt.ServerRenderResult <- ServerRenderResult{HTML: html, CSS: serverBuild.CSS, Error: err}
+	renderedHTML, err := rt.renderReactToHTML(serverBuild.js)
+	rt.serverRenderResult <- ServerRenderResult{html: renderedHTML, css: serverBuild.css, err: err}
 }
 
 type ServerBuild struct {
-	JS  string
-	CSS string
+	js  string
+	css string
 }
 
-func (rt *RenderTask) buildReactServerFile() (ServerBuild, error) {
+func (rt *renderTask) buildReactServerFile() (ServerBuild, error) {
 	var layoutImport string
 	renderStatement := `renderToString(<App {...props} />)`
-	if rt.Engine.Config.LayoutFile != "" {
-		layoutImport = fmt.Sprintf(`import Layout from "%s";`, rt.Engine.Config.LayoutFile)
+	if rt.engine.Config.LayoutFilePath != "" {
+		layoutImport = fmt.Sprintf(`import Layout from "%s";`, rt.engine.Config.LayoutFilePath)
 		renderStatement = `renderToString(<Layout><App {...props} /></Layout>)`
 	}
 	buildResult := esbuildApi.Build(esbuildApi.BuildOptions{
@@ -155,9 +161,9 @@ func (rt *RenderTask) buildReactServerFile() (ServerBuild, error) {
 				return %s;
 			  }
 			  globalThis.render = render;
-		  `, layoutImport, rt.FilePath, renderStatement),
+		  `, layoutImport, rt.filePath, renderStatement),
 			Loader:     esbuildApi.LoaderTSX,
-			ResolveDir: rt.Engine.Config.FrontendDir,
+			ResolveDir: rt.engine.Config.FrontendDir,
 		},
 		Bundle:            true,
 		Write:             false,
@@ -165,7 +171,7 @@ func (rt *RenderTask) buildReactServerFile() (ServerBuild, error) {
 		MinifyWhitespace:  true,
 		MinifyIdentifiers: true,
 		MinifySyntax:      true,
-		AssetNames:        fmt.Sprintf("%s/[name]", strings.TrimPrefix(rt.Engine.Config.AssetRoute, "/")),
+		AssetNames:        fmt.Sprintf("%s/[name]", strings.TrimPrefix(rt.engine.Config.AssetRoute, "/")),
 		Loader: map[string]esbuildApi.Loader{ // for loading images properly
 			".png":  esbuildApi.LoaderFile,
 			".svg":  esbuildApi.LoaderFile,
@@ -197,7 +203,7 @@ func (rt *RenderTask) buildReactServerFile() (ServerBuild, error) {
 	}
 
 	// Write js to file, future use
-	cacheDir, err := utils.GetServerBuildCacheDir(rt.Config.File)
+	cacheDir, err := utils.GetServerBuildCacheDir(rt.config.File)
 	if err != nil {
 		return ServerBuild{}, err
 	}
@@ -206,10 +212,10 @@ func (rt *RenderTask) buildReactServerFile() (ServerBuild, error) {
 		return ServerBuild{}, err
 	}
 
-	return ServerBuild{JS: js, CSS: css}, nil
+	return ServerBuild{js: js, css: css}, nil
 }
 
-func (rt *RenderTask) renderReactToHTML(rendererJS string) (string, error) {
+func (rt *renderTask) renderReactToHTML(rendererJS string) (string, error) {
 	vm := goja.New()
 	if err := injectTextEncoderPolyfill(vm); err != nil {
 		return "", err
@@ -217,7 +223,7 @@ func (rt *RenderTask) renderReactToHTML(rendererJS string) (string, error) {
 	if err := injectConsolePolyfill(vm); err != nil {
 		return "", err
 	}
-	if _, err := vm.RunString(rendererJS + fmt.Sprintf(`var props = %s;`, rt.Props)); err != nil {
+	if _, err := vm.RunString(rendererJS + fmt.Sprintf(`var props = %s;`, rt.props)); err != nil {
 		return "", err
 	}
 	render, ok := goja.AssertFunction(vm.Get("render"))
@@ -329,40 +335,40 @@ func injectConsolePolyfill(vm *goja.Runtime) error {
 }
 
 type ClientRenderResult struct {
-	JS           string
-	Dependencies []string
-	Error        error
+	js           string
+	dependencies []string
+	err          error
 }
 
-func (rt *RenderTask) clientRender() {
-	clientBuild, ok := rt.Engine.Cache.GetClientBuild(rt.FilePath)
+func (rt *renderTask) clientRender() {
+	clientBuild, ok := rt.engine.CacheManager.GetClientBuild(rt.filePath)
 	if !ok {
 		build, err := rt.buildReactClientFile()
 		if err != nil {
-			rt.ClientRenderResult <- ClientRenderResult{Error: err}
+			rt.clientRenderResult <- ClientRenderResult{err: err}
 			return
 		}
 		clientBuild = build
-		rt.Engine.Cache.SetClientBuild(rt.FilePath, clientBuild)
+		rt.engine.CacheManager.SetClientBuild(rt.filePath, clientBuild)
 	}
-	js := injectProps(clientBuild.JS, rt.Props)
-	rt.ClientRenderResult <- ClientRenderResult{JS: js, Dependencies: clientBuild.Dependencies}
+	js := injectProps(clientBuild.js, rt.props)
+	rt.clientRenderResult <- ClientRenderResult{js: js, dependencies: clientBuild.dependencies}
 }
 
 type ClientBuild struct {
-	JS           string
-	Dependencies []string
+	js           string
+	dependencies []string
 }
 
-func (rt *RenderTask) buildReactClientFile() (ClientBuild, error) {
+func (rt *renderTask) buildReactClientFile() (ClientBuild, error) {
 	layoutCSSImport := ""
-	if rt.Engine.CachedLayoutCSSFilePath != "" {
-		layoutCSSImport = fmt.Sprintf(`import "%s";`, rt.Engine.CachedLayoutCSSFilePath)
+	if rt.engine.CachedLayoutCSSFilePath != "" {
+		layoutCSSImport = fmt.Sprintf(`import "%s";`, rt.engine.CachedLayoutCSSFilePath)
 	}
 	var layoutImport string
 	renderStatement := `hydrateRoot(document.getElementById("root"), <App {...props} />);`
-	if rt.Engine.Config.LayoutFile != "" {
-		layoutImport = fmt.Sprintf(`import Layout from "%s";`, rt.Engine.Config.LayoutFile)
+	if rt.engine.Config.LayoutFilePath != "" {
+		layoutImport = fmt.Sprintf(`import Layout from "%s";`, rt.engine.Config.LayoutFilePath)
 		renderStatement = `hydrateRoot(document.getElementById("root"), <Layout><App {...props} /></Layout>);`
 	}
 	// Build with esbuild
@@ -374,9 +380,9 @@ func (rt *RenderTask) buildReactClientFile() (ClientBuild, error) {
 			%s
 			import App from "%s";
 			%s`,
-				layoutCSSImport, layoutImport, rt.FilePath, renderStatement),
-			Loader:     getLoaderType(rt.FilePath),
-			ResolveDir: rt.Engine.Config.FrontendDir,
+				layoutCSSImport, layoutImport, rt.filePath, renderStatement),
+			Loader:     getLoaderType(rt.filePath),
+			ResolveDir: rt.engine.Config.FrontendDir,
 		},
 		Bundle:            true,
 		MinifyWhitespace:  os.Getenv("APP_ENV") == "production", // Minify in production
@@ -406,7 +412,7 @@ func (rt *RenderTask) buildReactClientFile() (ClientBuild, error) {
 			break
 		}
 	}
-	return ClientBuild{JS: js, Dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}, nil
+	return ClientBuild{js: js, dependencies: getDependencyPathsFromMetafile(buildResult.Metafile)}, nil
 }
 
 // Get the esbuild loader type for the React file, depending on the file extension
