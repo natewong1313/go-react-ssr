@@ -1,6 +1,6 @@
 package html
 
-const BASE_TEMPLATE = `<!DOCTYPE html>
+const BaseTemplate = `<!DOCTYPE html>
 <html>
   <head>
 	<meta charset="UTF-8" />

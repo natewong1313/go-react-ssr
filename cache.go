@@ -2,104 +2,104 @@ package go_ssr
 
 import "sync"
 
-type Cache struct {
-	ServerBuilds             *ServerBuilds
-	ClientBuilds             *ClientBuilds
-	RouteIDToParentFile      *RouteIDToParentFile
-	ParentFileToDependencies *ParentFileToDependencies
+type CacheManager struct {
+	serverBuilds             *serverBuilds
+	clientBuilds             *clientBuilds
+	routeIDToParentFile      *routeIDToParentFile
+	parentFileToDependencies *parentFileToDependencies
 }
 
-func NewCache() *Cache {
-	return &Cache{
-		ServerBuilds: &ServerBuilds{
-			Builds: make(map[string]ServerBuild),
-			Lock:   sync.RWMutex{},
+func NewCacheManager() *CacheManager {
+	return &CacheManager{
+		serverBuilds: &serverBuilds{
+			builds: make(map[string]ServerBuild),
+			lock:   sync.RWMutex{},
 		},
-		ClientBuilds: &ClientBuilds{
-			Builds: make(map[string]ClientBuild),
-			Lock:   sync.RWMutex{},
+		clientBuilds: &clientBuilds{
+			builds: make(map[string]ClientBuild),
+			lock:   sync.RWMutex{},
 		},
-		RouteIDToParentFile: &RouteIDToParentFile{
-			ReactFiles: make(map[string]string),
-			Lock:       sync.RWMutex{},
+		routeIDToParentFile: &routeIDToParentFile{
+			reactFiles: make(map[string]string),
+			lock:       sync.RWMutex{},
 		},
-		ParentFileToDependencies: &ParentFileToDependencies{
-			Dependencies: make(map[string][]string),
-			Lock:         sync.RWMutex{},
+		parentFileToDependencies: &parentFileToDependencies{
+			dependencies: make(map[string][]string),
+			lock:         sync.RWMutex{},
 		},
 	}
 }
 
-type ServerBuilds struct {
-	Builds map[string]ServerBuild
-	Lock   sync.RWMutex
+type serverBuilds struct {
+	builds map[string]ServerBuild
+	lock   sync.RWMutex
 }
 
-func (cache *Cache) GetServerBuild(filePath string) (ServerBuild, bool) {
-	cache.ServerBuilds.Lock.RLock()
-	defer cache.ServerBuilds.Lock.RUnlock()
-	build, ok := cache.ServerBuilds.Builds[filePath]
+func (cm *CacheManager) GetServerBuild(filePath string) (ServerBuild, bool) {
+	cm.serverBuilds.lock.RLock()
+	defer cm.serverBuilds.lock.RUnlock()
+	build, ok := cm.serverBuilds.builds[filePath]
 	return build, ok
 }
 
-func (cache *Cache) SetServerBuild(filePath string, build ServerBuild) {
-	cache.ServerBuilds.Lock.Lock()
-	defer cache.ServerBuilds.Lock.Unlock()
-	cache.ServerBuilds.Builds[filePath] = build
+func (cm *CacheManager) SetServerBuild(filePath string, build ServerBuild) {
+	cm.serverBuilds.lock.Lock()
+	defer cm.serverBuilds.lock.Unlock()
+	cm.serverBuilds.builds[filePath] = build
 }
 
-func (cache *Cache) RemoveServerBuild(filePath string) {
-	cache.ServerBuilds.Lock.Lock()
-	defer cache.ServerBuilds.Lock.Unlock()
-	if _, ok := cache.ServerBuilds.Builds[filePath]; !ok {
+func (cm *CacheManager) RemoveServerBuild(filePath string) {
+	cm.serverBuilds.lock.Lock()
+	defer cm.serverBuilds.lock.Unlock()
+	if _, ok := cm.serverBuilds.builds[filePath]; !ok {
 		return
 	}
-	delete(cache.ServerBuilds.Builds, filePath)
+	delete(cm.serverBuilds.builds, filePath)
 }
 
-type ClientBuilds struct {
-	Builds map[string]ClientBuild
-	Lock   sync.RWMutex
+type clientBuilds struct {
+	builds map[string]ClientBuild
+	lock   sync.RWMutex
 }
 
-func (cache *Cache) GetClientBuild(filePath string) (ClientBuild, bool) {
-	cache.ClientBuilds.Lock.RLock()
-	defer cache.ClientBuilds.Lock.RUnlock()
-	build, ok := cache.ClientBuilds.Builds[filePath]
+func (cm *CacheManager) GetClientBuild(filePath string) (ClientBuild, bool) {
+	cm.clientBuilds.lock.RLock()
+	defer cm.clientBuilds.lock.RUnlock()
+	build, ok := cm.clientBuilds.builds[filePath]
 	return build, ok
 }
 
-func (cache *Cache) SetClientBuild(filePath string, build ClientBuild) {
-	cache.ClientBuilds.Lock.Lock()
-	defer cache.ClientBuilds.Lock.Unlock()
-	cache.ClientBuilds.Builds[filePath] = build
+func (cm *CacheManager) SetClientBuild(filePath string, build ClientBuild) {
+	cm.clientBuilds.lock.Lock()
+	defer cm.clientBuilds.lock.Unlock()
+	cm.clientBuilds.builds[filePath] = build
 }
 
-func (cache *Cache) RemoveClientBuild(filePath string) {
-	cache.ClientBuilds.Lock.Lock()
-	defer cache.ClientBuilds.Lock.Unlock()
-	if _, ok := cache.ClientBuilds.Builds[filePath]; !ok {
+func (cm *CacheManager) RemoveClientBuild(filePath string) {
+	cm.clientBuilds.lock.Lock()
+	defer cm.clientBuilds.lock.Unlock()
+	if _, ok := cm.clientBuilds.builds[filePath]; !ok {
 		return
 	}
-	delete(cache.ClientBuilds.Builds, filePath)
+	delete(cm.clientBuilds.builds, filePath)
 }
 
-type RouteIDToParentFile struct {
-	ReactFiles map[string]string
-	Lock       sync.RWMutex
+type routeIDToParentFile struct {
+	reactFiles map[string]string
+	lock       sync.RWMutex
 }
 
-func (cache *Cache) SetParentFile(routeID, filePath string) {
-	cache.RouteIDToParentFile.Lock.Lock()
-	defer cache.RouteIDToParentFile.Lock.Unlock()
-	cache.RouteIDToParentFile.ReactFiles[routeID] = filePath
+func (cm *CacheManager) SetParentFile(routeID, filePath string) {
+	cm.routeIDToParentFile.lock.Lock()
+	defer cm.routeIDToParentFile.lock.Unlock()
+	cm.routeIDToParentFile.reactFiles[routeID] = filePath
 }
 
-func (cache *Cache) GetRouteIDSForParentFile(filePath string) []string {
-	cache.RouteIDToParentFile.Lock.RLock()
-	defer cache.RouteIDToParentFile.Lock.RUnlock()
+func (cm *CacheManager) GetRouteIDSForParentFile(filePath string) []string {
+	cm.routeIDToParentFile.lock.RLock()
+	defer cm.routeIDToParentFile.lock.RUnlock()
 	var routes []string
-	for route, file := range cache.RouteIDToParentFile.ReactFiles {
+	for route, file := range cm.routeIDToParentFile.reactFiles {
 		if file == filePath {
 			routes = append(routes, route)
 		}
@@ -107,32 +107,32 @@ func (cache *Cache) GetRouteIDSForParentFile(filePath string) []string {
 	return routes
 }
 
-func (cache *Cache) GetAllRouteIDS() []string {
-	cache.RouteIDToParentFile.Lock.RLock()
-	defer cache.RouteIDToParentFile.Lock.RUnlock()
-	routes := make([]string, 0, len(cache.RouteIDToParentFile.ReactFiles))
-	for route := range cache.RouteIDToParentFile.ReactFiles {
+func (cm *CacheManager) GetAllRouteIDS() []string {
+	cm.routeIDToParentFile.lock.RLock()
+	defer cm.routeIDToParentFile.lock.RUnlock()
+	routes := make([]string, 0, len(cm.routeIDToParentFile.reactFiles))
+	for route := range cm.routeIDToParentFile.reactFiles {
 		routes = append(routes, route)
 	}
 	return routes
 }
 
-type ParentFileToDependencies struct {
-	Dependencies map[string][]string
-	Lock         sync.RWMutex
+type parentFileToDependencies struct {
+	dependencies map[string][]string
+	lock         sync.RWMutex
 }
 
-func (cache *Cache) SetParentFileDependencies(filePath string, dependencies []string) {
-	cache.ParentFileToDependencies.Lock.Lock()
-	defer cache.ParentFileToDependencies.Lock.Unlock()
-	cache.ParentFileToDependencies.Dependencies[filePath] = dependencies
+func (cm *CacheManager) SetParentFileDependencies(filePath string, dependencies []string) {
+	cm.parentFileToDependencies.lock.Lock()
+	defer cm.parentFileToDependencies.lock.Unlock()
+	cm.parentFileToDependencies.dependencies[filePath] = dependencies
 }
 
-func (cache *Cache) GetParentFilesFromDependency(dependencyPath string) []string {
-	cache.ParentFileToDependencies.Lock.RLock()
-	defer cache.ParentFileToDependencies.Lock.RUnlock()
+func (cm *CacheManager) GetParentFilesFromDependency(dependencyPath string) []string {
+	cm.parentFileToDependencies.lock.RLock()
+	defer cm.parentFileToDependencies.lock.RUnlock()
 	var parentFilePaths []string
-	for parentFilePath, dependencies := range cache.ParentFileToDependencies.Dependencies {
+	for parentFilePath, dependencies := range cm.parentFileToDependencies.dependencies {
 		for _, dependency := range dependencies {
 			if dependency == dependencyPath {
 				parentFilePaths = append(parentFilePaths, parentFilePath)

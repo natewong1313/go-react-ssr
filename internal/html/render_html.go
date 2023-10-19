@@ -30,9 +30,12 @@ type Params struct {
 // RenderHTMLString Renders the HTML template in internal/html with the given parameters
 func RenderHTMLString(params Params) []byte {
 	params.IsDev = os.Getenv("APP_ENV") != "production"
-	t := template.Must(template.New("").Parse(BASE_TEMPLATE))
+	t := template.Must(template.New("").Parse(BaseTemplate))
 	var output bytes.Buffer
-	t.Execute(&output, params)
+	err := t.Execute(&output, params)
+	if err != nil {
+		return RenderError(err)
+	}
 	return output.Bytes()
 }
 
@@ -40,8 +43,9 @@ type ErrorParams struct {
 	Error string
 }
 
+// RenderError Renders the error template with the given error
 func RenderError(e error) []byte {
-	t := template.Must(template.New("").Parse(ERROR_TEMPLATE))
+	t := template.Must(template.New("").Parse(ErrorTemplate))
 	var output bytes.Buffer
 	_, filename, line, _ := runtime.Caller(1)
 	t.Execute(&output, ErrorParams{

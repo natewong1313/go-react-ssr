@@ -1,6 +1,6 @@
 package html
 
-const ERROR_TEMPLATE = `<!DOCTYPE html>
+const ErrorTemplate = `<!DOCTYPE html>
 <html>
   <head>
 	<meta charset="UTF-8" />
