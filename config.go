@@ -13,34 +13,48 @@ type Config struct {
 	FrontendDir         string
 	GeneratedTypesPath  string
 	PropsStructsPath    string
+	LayoutFilePath      string
 	LayoutCSSFilePath   string
 	TailwindConfigPath  string
 	HotReloadServerPort int
-	LayoutFile          string
 }
 
 func (c *Config) Validate() error {
 	if !checkPathExists(c.FrontendDir) {
 		return fmt.Errorf("frontend dir ar %s does not exist", c.FrontendDir)
 	}
-	c.FrontendDir = utils.GetFullFilePath(c.FrontendDir)
-	c.GeneratedTypesPath = utils.GetFullFilePath(c.GeneratedTypesPath)
-	fmt.Println(c.GeneratedTypesPath)
 	if os.Getenv("APP_ENV") != "production" && !checkPathExists(c.PropsStructsPath) {
 		return fmt.Errorf("props structs path at %s does not exist", c.PropsStructsPath)
 	}
+	if c.LayoutFilePath != "" && !checkPathExists(path.Join(c.FrontendDir, c.LayoutFilePath)) {
+		return fmt.Errorf("layout css file path at %s/%s does not exist", c.FrontendDir, c.LayoutCSSFilePath)
+	}
+	if c.LayoutCSSFilePath != "" && !checkPathExists(path.Join(c.FrontendDir, c.LayoutCSSFilePath)) {
+		return fmt.Errorf("layout css file path at %s/%s does not exist", c.FrontendDir, c.LayoutCSSFilePath)
+	}
+	if c.TailwindConfigPath != "" && c.LayoutCSSFilePath == "" {
+		return fmt.Errorf("layout css file path must be provided when using tailwind")
+	}
+	if c.HotReloadServerPort == 0 {
+		c.HotReloadServerPort = 3001
+	}
+	c.setFilePaths()
+	return nil
+}
+
+func (c *Config) setFilePaths() {
+	c.FrontendDir = utils.GetFullFilePath(c.FrontendDir)
+	c.GeneratedTypesPath = utils.GetFullFilePath(c.GeneratedTypesPath)
 	c.PropsStructsPath = utils.GetFullFilePath(c.PropsStructsPath)
-	fmt.Println(c.PropsStructsPath)
+	if c.LayoutFilePath != "" {
+		c.LayoutFilePath = path.Join(c.FrontendDir, c.LayoutFilePath)
+	}
 	if c.LayoutCSSFilePath != "" {
-		if !checkPathExists(c.LayoutCSSFilePath) {
-			return fmt.Errorf("layout css file path at %s does not exist", c.LayoutCSSFilePath)
-		}
 		c.LayoutCSSFilePath = path.Join(c.FrontendDir, c.LayoutCSSFilePath)
 	}
-
-	c.TailwindConfigPath = utils.GetFullFilePath(c.TailwindConfigPath)
-	c.LayoutFile = path.Join(c.FrontendDir, c.LayoutFile)
-	return nil
+	if c.TailwindConfigPath != "" {
+		c.TailwindConfigPath = utils.GetFullFilePath(c.TailwindConfigPath)
+	}
 }
 
 func checkPathExists(path string) bool {

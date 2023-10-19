@@ -10,16 +10,16 @@ import (
 type Engine struct {
 	Logger                  zerolog.Logger
 	Config                  *Config
-	CachedLayoutCSSFilePath string
 	HotReload               *HotReload
-	Cache                   *Cache
+	CacheManager            *CacheManager
+	CachedLayoutCSSFilePath string
 }
 
-func New(config *Config) (*Engine, error) {
+func New(config Config) (*Engine, error) {
 	engine := &Engine{
-		Logger: zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
-		Config: config,
-		Cache:  NewCache(),
+		Logger:       zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
+		Config:       &config,
+		CacheManager: NewCacheManager(),
 	}
 	err := config.Validate()
 	if err != nil {
