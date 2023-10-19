@@ -19,6 +19,21 @@ const ErrorTemplate = `<!DOCTYPE html>
   <body>
 	<h1>An error occured</h1>
 	<code>{{ .Error }}</code>
+	{{if .IsDev}}
+		<script>
+		  let socket = new WebSocket("ws://127.0.0.1:3001/ws");
+		  socket.onopen = () => {
+			socket.send({{ .RouteID }});
+		  };
+	
+		  socket.onmessage = (event) => {
+			if (event.data === "reload") {
+			  console.log("Change detected, reloading...");
+			  window.location.reload();
+			}
+		  };
+		</script>
+	{{end}}
   </body>
 </html>
 `

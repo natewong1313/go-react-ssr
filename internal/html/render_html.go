@@ -34,22 +34,26 @@ func RenderHTMLString(params Params) []byte {
 	var output bytes.Buffer
 	err := t.Execute(&output, params)
 	if err != nil {
-		return RenderError(err)
+		return RenderError(err, params.RouteID)
 	}
 	return output.Bytes()
 }
 
 type ErrorParams struct {
-	Error string
+	Error   string
+	RouteID string
+	IsDev   bool
 }
 
 // RenderError Renders the error template with the given error
-func RenderError(e error) []byte {
+func RenderError(e error, routeID string) []byte {
 	t := template.Must(template.New("").Parse(ErrorTemplate))
 	var output bytes.Buffer
 	_, filename, line, _ := runtime.Caller(1)
 	t.Execute(&output, ErrorParams{
-		Error: fmt.Sprintf("%s line %d: %v", filename, line, e),
+		Error:   fmt.Sprintf("%s line %d: %v", filename, line, e),
+		RouteID: routeID,
+		IsDev:   os.Getenv("APP_ENV") != "production",
 	})
 	return output.Bytes()
 }
