@@ -27,7 +27,7 @@ Go-SSR was developed due to a lack of an existing product in the Go ecosystem th
 - Production optimized
 - Drop in to any existing Go web server
 
-<!-- _View more examples [here](github.com/natewong1313/go-react-ssr/examples)_ -->
+<!-- _View more examples [here](github.com/natewong1313/go-react_old-ssr/examples)_ -->
 
 # 🛠️ Getting Started
 
@@ -64,36 +64,34 @@ Then, add imports into your main file
 ```go
 import (
 	...
-	go_ssr "github.com/natewong1313/go-react-ssr"
-	"github.com/natewong1313/go-react-ssr/config"
-	"github.com/natewong1313/go-react-ssr/react_renderer"
+	gossr "github.com/natewong1313/go-react-ssr"
 )
 ```
 
 In your main function, initialize the plugin. Create a folder for your structs that hold your props to go, which is called `models` in the below example. You'll also want to create a folder for your React code (called `frontend` in this example) inside your project and specifiy the paths in the config. You may want to clone the [example folder](/examples/frontend/) and use that.
 
 ```go
-go_ssr.Init(config.Config{
-    AssetRoute:         "/assets", // The route where public assets are served from on your server
-    FrontendDir:        "./frontend/src", // The path to your React code
-    GeneratedTypesPath: "./frontend/src/generated.d.ts", // Where the generated Typescript types will be created
-    PropsStructsPath:   "./models/props.go", // Where your Go structs for your props are located
+engine, err := gossr.New(gossr.Config{
+    AssetRoute:         "/assets",
+    FrontendDir:        "./frontend/src",
+    GeneratedTypesPath: "./frontend/src/generated.d.ts",
+    PropsStructsPath:   "./models/props.go",
 })
 ```
 
-Once the plugin has been initialized, you can call the `react_renderer.RenderRoute` function to compile your React file to a string
+Once the plugin has been initialized, you can call the `engine.RenderRoute` function to compile your React file to a string
 
 ```go
 g.GET("/", func(c *gin.Context) {
-	renderedResponse := react_renderer.RenderRoute(react_renderer.Config{
-		File:  "Home.tsx", // The file name, located in FrontendDir
-		Title: "My example app", // Set the app title
-		MetaTags: map[string]string{ // Configure meta tags
-			"og:title":    "My example app",
-			"description": "Example description",
-		},
-		Props: &models.IndexRouteProps{ // Pass in your props struct if you have props
-			InitialCount: 0,
+	renderedResponse := engine.RenderRoute(gossr.RenderConfig{
+		File:  "Home.tsx", 
+		Title: "Example app", 
+		MetaTags: map[string]string{
+			"og:title":    "Example app", 
+			"description": "Hello world!",
+		}, 
+		Props: &models.IndexRouteProps{
+			InitialCount: rand.Intn(100),
 		},
 	})
 	c.Writer.Write(renderedResponse)
@@ -108,7 +106,7 @@ Below is an example Dockerfile
 ```Dockerfile
 FROM golang:1.21-alpine as build-backend
 RUN apk add git
-ADD . /build
+ADD .. /build
 WORKDIR /build
 
 RUN go mod download

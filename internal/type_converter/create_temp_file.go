@@ -7,26 +7,12 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/natewong1313/go-react-ssr/config"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
-// createCacheFolder creates a folder in the local cache directory to store the temporary generator file
-func createCacheFolder() (string, error) {
-	osCacheDir, _ := os.UserCacheDir()
-	cacheFolderPath := filepath.Join(osCacheDir, "gossr")
-	os.RemoveAll(cacheFolderPath)
-	err := os.MkdirAll(cacheFolderPath, os.ModePerm)
-	if err != nil {
-		return "", err
-	}
-
-	return cacheFolderPath, nil
-}
-
 // https://github.com/tkrajina/typescriptify-golang-structs/blob/master/tscriptify/main.go#L139
-func createTemporaryFile(folderPath string, structNames []string) (string, error) {
-	temporaryFilePath := filepath.ToSlash(filepath.Join(folderPath, "generator.go"))
+func createTemporaryFile(structsFilePath, generatedTypesPath, cacheDir string, structNames []string) (string, error) {
+	temporaryFilePath := filepath.ToSlash(filepath.Join(cacheDir, "generator.go"))
 	file, err := os.Create(temporaryFilePath)
 	if err != nil {
 		return temporaryFilePath, err
@@ -46,12 +32,12 @@ func createTemporaryFile(folderPath string, structNames []string) (string, error
 	var params TemplateParams
 	params.Structs = structsArr
 
-	params.ModuleName, err = getModuleName(config.C.PropsStructsPath)
+	params.ModuleName, err = getModuleName(structsFilePath)
 	if err != nil {
 		return temporaryFilePath, err
 	}
 	params.Interface = true
-	params.TargetFile = utils.GetFullFilePath(config.C.GeneratedTypesPath)
+	params.TargetFile = utils.GetFullFilePath(generatedTypesPath)
 
 	err = t.Execute(file, params)
 	if err != nil {
