@@ -35,10 +35,11 @@ type renderTask struct {
 }
 
 func (engine *Engine) RenderRoute(renderConfig RenderConfig) []byte {
+	pc, _, _, _ := runtime.Caller(1)
 	task := renderTask{
 		engine:             engine,
 		logger:             zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
-		routeID:            getRouteID(),
+		routeID:            fmt.Sprint(pc),
 		filePath:           filepath.ToSlash(utils.GetFullFilePath(engine.Config.FrontendDir + "/" + renderConfig.File)),
 		config:             renderConfig,
 		serverRenderResult: make(chan ServerRenderResult),
@@ -50,38 +51,12 @@ func (engine *Engine) RenderRoute(renderConfig RenderConfig) []byte {
 	}
 	return html.RenderHTMLString(html.Params{
 		Title:      renderConfig.Title,
-		MetaTags:   getMetaTags(renderConfig.MetaTags),
-		OGMetaTags: getOGMetaTags(renderConfig.MetaTags),
+		MetaTags:   renderConfig.MetaTags,
 		JS:         template.JS(clientRenderResult.js),
 		CSS:        template.CSS(serverRenderResult.css),
 		RouteID:    task.routeID,
 		ServerHTML: template.HTML(serverRenderResult.html),
 	})
-}
-
-func getRouteID() string {
-	pc, _, _, _ := runtime.Caller(2)
-	return fmt.Sprint(pc)
-}
-
-func getMetaTags(metaTags map[string]string) map[string]string {
-	newMetaTags := make(map[string]string)
-	for key, value := range metaTags {
-		if !strings.HasPrefix(key, "og:") {
-			newMetaTags[key] = value
-		}
-	}
-	return newMetaTags
-}
-
-func getOGMetaTags(metaTags map[string]string) map[string]string {
-	newMetaTags := make(map[string]string)
-	for key, value := range metaTags {
-		if strings.HasPrefix(key, "og:") {
-			newMetaTags[key] = value
-		}
-	}
-	return newMetaTags
 }
 
 func (rt *renderTask) Render() (ServerRenderResult, ClientRenderResult, error) {

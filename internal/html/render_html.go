@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"os"
 	"runtime"
+	"strings"
 )
 
 type Params struct {
@@ -30,6 +31,8 @@ type Params struct {
 // RenderHTMLString Renders the HTML template in internal/html with the given parameters
 func RenderHTMLString(params Params) []byte {
 	params.IsDev = os.Getenv("APP_ENV") != "production"
+	params.OGMetaTags = getOGMetaTags(params.MetaTags)
+	params.MetaTags = getMetaTags(params.MetaTags)
 	t := template.Must(template.New("").Parse(BaseTemplate))
 	var output bytes.Buffer
 	err := t.Execute(&output, params)
@@ -37,6 +40,26 @@ func RenderHTMLString(params Params) []byte {
 		return RenderError(err, params.RouteID)
 	}
 	return output.Bytes()
+}
+
+func getMetaTags(metaTags map[string]string) map[string]string {
+	newMetaTags := make(map[string]string)
+	for key, value := range metaTags {
+		if !strings.HasPrefix(key, "og:") {
+			newMetaTags[key] = value
+		}
+	}
+	return newMetaTags
+}
+
+func getOGMetaTags(metaTags map[string]string) map[string]string {
+	newMetaTags := make(map[string]string)
+	for key, value := range metaTags {
+		if strings.HasPrefix(key, "og:") {
+			newMetaTags[key] = value
+		}
+	}
+	return newMetaTags
 }
 
 type ErrorParams struct {
