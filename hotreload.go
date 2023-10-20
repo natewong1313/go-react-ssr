@@ -18,6 +18,7 @@ type HotReload struct {
 	connectedClients map[string][]*websocket.Conn
 }
 
+// newHotReload creates a new HotReload instance
 func newHotReload(engine *Engine) *HotReload {
 	return &HotReload{
 		engine:           engine,
@@ -26,12 +27,13 @@ func newHotReload(engine *Engine) *HotReload {
 	}
 }
 
+// Start starts the hot reload server and watcher
 func (hr *HotReload) Start() {
 	go hr.startServer()
 	go hr.startWatcher()
 }
 
-// StartServer starts the hot reload websocket server at the port specified in the config
+// startServer starts the hot reload websocket server
 func (hr *HotReload) startServer() {
 	hr.logger.Info().Msgf("Hot reload websocket running on port %d", hr.engine.Config.HotReloadServerPort)
 	upgrader := websocket.Upgrader{
@@ -65,6 +67,7 @@ func (hr *HotReload) startServer() {
 	}
 }
 
+// startWatcher starts the file watcher
 func (hr *HotReload) startWatcher() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -72,7 +75,7 @@ func (hr *HotReload) startWatcher() {
 		return
 	}
 	defer watcher.Close()
-
+	// Walk through all files in the frontend directory and add them to the watcher
 	if err = filepath.Walk(hr.engine.Config.FrontendDir, func(path string, fi os.FileInfo, err error) error {
 		if fi.Mode().IsDir() {
 			return watcher.Add(path)
@@ -96,15 +99,13 @@ func (hr *HotReload) startWatcher() {
 				case filePath == hr.engine.Config.LayoutFilePath: // If the layout file has been updated, reload all routes
 					routeIDS = hr.engine.CacheManager.GetAllRouteIDS()
 				case hr.layoutCSSFileUpdated(filePath): // If the global css file has been updated, rebuild it and reload all routes
-					err := hr.engine.BuildLayoutCSSFile()
-					if err != nil {
+					if err := hr.engine.BuildLayoutCSSFile(); err != nil {
 						hr.logger.Err(err).Msg("Failed to build global css file")
 						continue
 					}
 					routeIDS = hr.engine.CacheManager.GetAllRouteIDS()
 				case hr.needsTailwindRecompile(filePath): // If tailwind is enabled and a React file has been updated, rebuild the global css file and reload all routes
-					err := hr.engine.BuildLayoutCSSFile()
-					if err != nil {
+					if err := hr.engine.BuildLayoutCSSFile(); err != nil {
 						hr.logger.Err(err).Msg("Failed to build global css file")
 						continue
 					}
@@ -113,12 +114,13 @@ func (hr *HotReload) startWatcher() {
 					// Get all route ids that use that file or have it as a dependency
 					routeIDS = hr.engine.CacheManager.GetRouteIDSWithFile(filePath)
 				}
+				// Find any parent files that import the file that was modified and delete their cached build
 				parentFiles := hr.engine.CacheManager.GetParentFilesFromDependency(filePath)
 				for _, parentFile := range parentFiles {
 					hr.engine.CacheManager.RemoveServerBuild(parentFile)
 					hr.engine.CacheManager.RemoveClientBuild(parentFile)
 				}
-				// Tell all browser clients listening for those route ids to reload
+				// Reload any routes that import the modified file
 				go hr.broadcastFileUpdateToClients(routeIDS)
 
 			}
@@ -128,11 +130,12 @@ func (hr *HotReload) startWatcher() {
 	}
 }
 
+// layoutCSSFileUpdated checks if the layout css file has been updated
 func (hr *HotReload) layoutCSSFileUpdated(filePath string) bool {
-	return utils.GetFullFilePath(filePath) == utils.GetFullFilePath(hr.engine.Config.LayoutCSSFilePath)
+	return utils.GetFullFilePath(filePath) == hr.engine.Config.LayoutCSSFilePath
 }
 
-// Check if tailwind is enabled and if the file is a React file.
+// needsTailwindRecompile checks if the file that was updated is a React file
 func (hr *HotReload) needsTailwindRecompile(filePath string) bool {
 	if hr.engine.Config.TailwindConfigPath == "" {
 		return false
@@ -146,7 +149,7 @@ func (hr *HotReload) needsTailwindRecompile(filePath string) bool {
 	return false
 }
 
-// Tell all clients listening for a specific routeID to reload
+// broadcastFileUpdateToClients sends a message to all connected clients to reload the page
 func (hr *HotReload) broadcastFileUpdateToClients(routeIDS []string) {
 	// Iterate over each route ID
 	for _, routeID := range routeIDS {

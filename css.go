@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 )
 
+// BuildLayoutCSSFile builds the layout css file if it exists
 func (engine *Engine) BuildLayoutCSSFile() error {
 	if engine.CachedLayoutCSSFilePath == "" && engine.Config.LayoutCSSFilePath != "" {
 		layoutCSSCacheDir, err := utils.GetCSSCacheDir()
@@ -27,14 +28,15 @@ func (engine *Engine) BuildLayoutCSSFile() error {
 	return nil
 }
 
-func createCachedCSSFile(globalCSSCacheDir, globalCSSFilePath string) (string, error) {
-	cachedCSSFilePath := utils.GetFullFilePath(filepath.Join(globalCSSCacheDir, "gossr.css"))
+// createCachedCSSFile creates a cached css file from the layout css file
+func createCachedCSSFile(layoutCSSCacheDir, layoutCSSFilePath string) (string, error) {
+	cachedCSSFilePath := utils.GetFullFilePath(filepath.Join(layoutCSSCacheDir, "gossr.css"))
 	file, err := os.Create(cachedCSSFilePath)
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
-	globalCSSFile, err := os.Open(globalCSSFilePath)
+	globalCSSFile, err := os.Open(layoutCSSFilePath)
 	if err != nil {
 		return "", err
 	}
@@ -43,8 +45,8 @@ func createCachedCSSFile(globalCSSCacheDir, globalCSSFilePath string) (string, e
 	return cachedCSSFilePath, err
 }
 
+// buildCSSWithTailwind builds the css file with tailwind cli
 func (engine *Engine) buildCSSWithTailwind() error {
-	// Uses tailwindcss cli to compile the tailwind css file, takes in the global css file as an input and outputs to the file path passed in
 	cmd := exec.Command("npx", "tailwindcss", "-i", engine.Config.LayoutCSSFilePath, "-o", engine.CachedLayoutCSSFilePath)
 	// Set the working directory to the directory of the tailwind config file
 	cmd.Dir = filepath.Dir(engine.Config.TailwindConfigPath)

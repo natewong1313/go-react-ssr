@@ -19,6 +19,7 @@ type Config struct {
 	HotReloadServerPort int
 }
 
+// Validate validates the config
 func (c *Config) Validate() error {
 	if !checkPathExists(c.FrontendDir) {
 		return fmt.Errorf("frontend dir ar %s does not exist", c.FrontendDir)
@@ -42,6 +43,7 @@ func (c *Config) Validate() error {
 	return nil
 }
 
+// setFilePaths sets any paths in the config to their absolute paths
 func (c *Config) setFilePaths() {
 	c.FrontendDir = utils.GetFullFilePath(c.FrontendDir)
 	c.GeneratedTypesPath = utils.GetFullFilePath(c.GeneratedTypesPath)
