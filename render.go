@@ -108,9 +108,11 @@ func (rt *renderTask) serverRender() {
 			return
 		}
 		serverBuild = build
-		rt.engine.CacheManager.SetServerBuild(rt.filePath, serverBuild)
 	}
 	renderedHTML, err := rt.renderReactToHTML(serverBuild.js)
+	if err == nil && !ok {
+		rt.engine.CacheManager.SetServerBuild(rt.filePath, serverBuild)
+	}
 	rt.serverRenderResult <- ServerRenderResult{html: renderedHTML, css: serverBuild.css, err: err}
 }
 
