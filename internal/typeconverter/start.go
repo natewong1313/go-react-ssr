@@ -1,4 +1,4 @@
-package type_converter
+package typeconverter
 
 import (
 	"github.com/natewong1313/go-react-ssr/internal/utils"

@@ -1,7 +1,7 @@
 package go_ssr
 
 import (
-	"github.com/natewong1313/go-react-ssr/internal/type_converter"
+	"github.com/natewong1313/go-react-ssr/internal/typeconverter"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"github.com/rs/zerolog"
 	"os"
@@ -47,7 +47,7 @@ func New(config Config) (*Engine, error) {
 	engine.Logger.Info().Msg("Running go-ssr in development mode")
 	engine.Logger.Debug().Msg("Starting type converter")
 	// Start the type converter to convert Go types to Typescript types
-	if err := type_converter.Start(engine.Config.PropsStructsPath, engine.Config.GeneratedTypesPath); err != nil {
+	if err := typeconverter.Start(engine.Config.PropsStructsPath, engine.Config.GeneratedTypesPath); err != nil {
 		engine.Logger.Err(err).Msg("Failed to init type converter")
 		return nil, err
 	}

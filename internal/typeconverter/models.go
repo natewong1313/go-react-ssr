@@ -1,4 +1,4 @@
-package type_converter
+package typeconverter
 
 import "strings"
 
