@@ -41,13 +41,13 @@ func GetTypeConverterCacheDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	typeConverterCacheDir := filepath.Join(cacheDir, "type_converter")
+	typeConverterCacheDir := filepath.Join(cacheDir, "typeconverter")
 	err = os.MkdirAll(typeConverterCacheDir, os.ModePerm)
 	return typeConverterCacheDir, err
 }
 
 // GetServerBuildCacheDir returns the path to the server build cache directory for the given route
-func GetServerBuildCacheDir(routeName string) (string, error) {
+func GetServerBuildCacheDir(fileName string) (string, error) {
 	cacheDir, err := createCacheDirIfNotExists()
 	if err != nil {
 		return "", err
@@ -55,12 +55,12 @@ func GetServerBuildCacheDir(routeName string) (string, error) {
 	serverBuildCacheDir := filepath.Join(cacheDir, "builds")
 	err = os.MkdirAll(serverBuildCacheDir, os.ModePerm)
 
-	routeCacheDir := filepath.Join(serverBuildCacheDir, routeName)
+	routeCacheDir := filepath.Join(serverBuildCacheDir, fileName)
 	err = os.MkdirAll(routeCacheDir, os.ModePerm)
 	return routeCacheDir, err
 }
 
-// GetGlobalCSSCacheDir returns the path to the server build cache directory for the given route
+// GetCSSCacheDir returns the path to the server build cache directory for the given route
 func GetCSSCacheDir() (string, error) {
 	cacheDir, err := createCacheDirIfNotExists()
 	if err != nil {

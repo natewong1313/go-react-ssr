@@ -1,6 +1,7 @@
 package go_ssr
 
 import (
+	"github.com/natewong1313/go-react-ssr/internal/reactbuilder"
 	"sync"
 )
 
@@ -14,11 +15,11 @@ type CacheManager struct {
 func NewCacheManager() *CacheManager {
 	return &CacheManager{
 		serverBuilds: &serverBuilds{
-			builds: make(map[string]ServerBuild),
+			builds: make(map[string]reactbuilder.BuildResult),
 			lock:   sync.RWMutex{},
 		},
 		clientBuilds: &clientBuilds{
-			builds: make(map[string]ClientBuild),
+			builds: make(map[string]reactbuilder.BuildResult),
 			lock:   sync.RWMutex{},
 		},
 		routeIDToParentFile: &routeIDToParentFile{
@@ -33,18 +34,18 @@ func NewCacheManager() *CacheManager {
 }
 
 type serverBuilds struct {
-	builds map[string]ServerBuild
+	builds map[string]reactbuilder.BuildResult
 	lock   sync.RWMutex
 }
 
-func (cm *CacheManager) GetServerBuild(filePath string) (ServerBuild, bool) {
+func (cm *CacheManager) GetServerBuild(filePath string) (reactbuilder.BuildResult, bool) {
 	cm.serverBuilds.lock.RLock()
 	defer cm.serverBuilds.lock.RUnlock()
 	build, ok := cm.serverBuilds.builds[filePath]
 	return build, ok
 }
 
-func (cm *CacheManager) SetServerBuild(filePath string, build ServerBuild) {
+func (cm *CacheManager) SetServerBuild(filePath string, build reactbuilder.BuildResult) {
 	cm.serverBuilds.lock.Lock()
 	defer cm.serverBuilds.lock.Unlock()
 	cm.serverBuilds.builds[filePath] = build
@@ -60,18 +61,18 @@ func (cm *CacheManager) RemoveServerBuild(filePath string) {
 }
 
 type clientBuilds struct {
-	builds map[string]ClientBuild
+	builds map[string]reactbuilder.BuildResult
 	lock   sync.RWMutex
 }
 
-func (cm *CacheManager) GetClientBuild(filePath string) (ClientBuild, bool) {
+func (cm *CacheManager) GetClientBuild(filePath string) (reactbuilder.BuildResult, bool) {
 	cm.clientBuilds.lock.RLock()
 	defer cm.clientBuilds.lock.RUnlock()
 	build, ok := cm.clientBuilds.builds[filePath]
 	return build, ok
 }
 
-func (cm *CacheManager) SetClientBuild(filePath string, build ClientBuild) {
+func (cm *CacheManager) SetClientBuild(filePath string, build reactbuilder.BuildResult) {
 	cm.clientBuilds.lock.Lock()
 	defer cm.clientBuilds.lock.Unlock()
 	cm.clientBuilds.builds[filePath] = build
