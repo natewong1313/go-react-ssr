@@ -49,17 +49,17 @@ func prompt_selectWebFramework() string {
 	return result
 }
 
-func prompt_isUsingTailwind() bool {
-	prompt := promptui.Prompt{
-		Label:   "Use Tailwind? (y/n)",
-		Default: "n",
+func prompt_selectStylingPlugin() string {
+	prompt := promptui.Select{
+		Label: "Select a styling plugin to use",
+		Items: []string{"None", "Tailwind", "Material UI"},
 	}
 
-	result, err := prompt.Run()
+	_, result, err := prompt.Run()
 	if err != nil {
 		utils.HandleError(err)
 	}
-	return strings.ToLower(result) == "y"
+	return result
 }
 
 func prompt_isUsingTypescript() bool {

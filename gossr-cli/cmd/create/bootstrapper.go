@@ -13,12 +13,12 @@ import (
 )
 
 type Bootstrapper struct {
-	TempDirPath     string
-	ProjectDir      string
-	GoModuleName    string
-	FrontendDir     string
-	WebFramework    string
-	IsUsingTailwind bool
+	TempDirPath   string
+	ProjectDir    string
+	GoModuleName  string
+	FrontendDir   string
+	WebFramework  string
+	StylingPlugin string
 }
 
 func (b *Bootstrapper) Start() {
@@ -67,8 +67,10 @@ func (b *Bootstrapper) setupBackend(wg *sync.WaitGroup) {
 func (b *Bootstrapper) createFrontendFolder() {
 	logger.L.Info().Msg("Creating /frontend folder")
 	frontendFolderFromGit := b.TempDirPath + "/go-react-ssr/examples/frontend"
-	if b.IsUsingTailwind {
+	if b.StylingPlugin == "Tailwind" {
 		frontendFolderFromGit = b.TempDirPath + "/go-react-ssr/examples/frontend-tailwind"
+	} else if b.StylingPlugin == "Material UI" {
+		frontendFolderFromGit = b.TempDirPath + "/go-react-ssr/examples/frontend-mui"
 	}
 	err := cp.Copy(frontendFolderFromGit, b.ProjectDir+"/frontend")
 	if err != nil {
@@ -104,6 +106,7 @@ func (b *Bootstrapper) replaceImportsInGoFile() {
 	}
 	newContents := strings.Replace(string(read), "../frontend", "./frontend", -1)
 	newContents = strings.Replace(newContents, "-tailwind/", "/", -1)
+	newContents = strings.Replace(newContents, "-mui/", "/", -1)
 	err = os.WriteFile(b.ProjectDir+"/main.go", []byte(newContents), 0644)
 	if err != nil {
 		utils.HandleError(err)
@@ -117,10 +120,8 @@ func (b *Bootstrapper) updateDockerFile() {
 		utils.HandleError(err)
 	}
 	var contents string
-	if b.IsUsingTailwind {
-		contents = strings.Replace(string(read), "frontend-tailwind", "frontend", -1)
-		contents = strings.Replace(string(read), "FROM alpine:latest", "FROM node:16-alpine", -1)
-	}
+	contents = strings.Replace(string(read), "frontend-tailwind", "frontend", -1)
+	contents = strings.Replace(string(read), "frontend-mui", "frontend", -1)
 	err = os.WriteFile(b.ProjectDir+"/Dockerfile", []byte(contents), 0644)
 	if err != nil {
 		utils.HandleError(err)
