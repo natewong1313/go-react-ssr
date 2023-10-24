@@ -1,14 +1,20 @@
 package reactbuilder
 
 import (
+	"errors"
 	"os/exec"
+	"strings"
 )
 
 func RenderReactToHTML(serverRenderJSFilePath string) (string, error) {
 	cmd := exec.Command("node", serverRenderJSFilePath)
-	out, err := cmd.CombinedOutput()
+	stdOut := new(strings.Builder)
+	stdErr := new(strings.Builder)
+	cmd.Stdout = stdOut
+	cmd.Stderr = stdErr
+	err := cmd.Run()
 	if err != nil {
-		return "", err
+		return "", errors.New(stdErr.String())
 	}
-	return string(out), nil
+	return stdOut.String(), nil
 }
