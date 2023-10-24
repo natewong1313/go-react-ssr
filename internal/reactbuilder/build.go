@@ -15,27 +15,6 @@ type BuildResult struct {
 	Dependencies []string
 }
 
-var baseBuildOptions = esbuildApi.BuildOptions{
-	Stdin: &esbuildApi.StdinOptions{
-		Contents:   "",
-		Loader:     esbuildApi.LoaderTSX,
-		ResolveDir: "",
-	},
-	Bundle:     true,
-	Write:      false,
-	Outdir:     "/",
-	Metafile:   false,
-	AssetNames: "",
-	Loader: map[string]esbuildApi.Loader{ // for loading images properly
-		".png":  esbuildApi.LoaderFile,
-		".svg":  esbuildApi.LoaderFile,
-		".jpg":  esbuildApi.LoaderFile,
-		".jpeg": esbuildApi.LoaderFile,
-		".gif":  esbuildApi.LoaderFile,
-		".bmp":  esbuildApi.LoaderFile,
-	},
-}
-
 func BuildServer(buildContents, frontendDir, assetRoute string) (BuildResult, error) {
 	opts := esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
