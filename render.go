@@ -131,12 +131,7 @@ func (rt *renderTask) buildReactServerFile() (reactbuilder.BuildResult, error) {
 	if err != nil {
 		return reactbuilder.BuildResult{}, err
 	}
-	buildResult, err := reactbuilder.BuildServer(contents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute)
-	if err != nil {
-		return reactbuilder.BuildResult{}, err
-	}
-
-	return buildResult, nil
+	return reactbuilder.BuildServer(contents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute)
 }
 
 func (rt *renderTask) saveServerRenderFile(js string) (string, error) {
@@ -185,11 +180,7 @@ func (rt *renderTask) buildReactClientFile() (reactbuilder.BuildResult, error) {
 	if err != nil {
 		return reactbuilder.BuildResult{}, err
 	}
-	buildResult, err := reactbuilder.BuildClient(contents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute)
-	if err != nil {
-		return reactbuilder.BuildResult{}, err
-	}
-	return buildResult, nil
+	return reactbuilder.BuildClient(contents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute)
 }
 
 // injectProps injects the props into the already compiled JS
