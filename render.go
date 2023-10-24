@@ -107,6 +107,7 @@ func (rt *renderTask) serverRender() {
 			return
 		}
 		serverBuild = build
+		rt.engine.CacheManager.SetServerBuild(rt.filePath, build)
 	}
 	js := injectProps(serverBuild.JS, rt.props)
 	serverRenderJSFilePath, err := rt.saveServerRenderFile(js)
