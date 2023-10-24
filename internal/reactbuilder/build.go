@@ -15,21 +15,40 @@ type BuildResult struct {
 	Dependencies []string
 }
 
-func Build(buildContents, frontendDir, assetRoute string, parseMetafile bool) (BuildResult, error) {
-	result := esbuildApi.Build(esbuildApi.BuildOptions{
+var baseBuildOptions = esbuildApi.BuildOptions{
+	Stdin: &esbuildApi.StdinOptions{
+		Contents:   "",
+		Loader:     esbuildApi.LoaderTSX,
+		ResolveDir: "",
+	},
+	Bundle:     true,
+	Write:      false,
+	Outdir:     "/",
+	Metafile:   false,
+	AssetNames: "",
+	Loader: map[string]esbuildApi.Loader{ // for loading images properly
+		".png":  esbuildApi.LoaderFile,
+		".svg":  esbuildApi.LoaderFile,
+		".jpg":  esbuildApi.LoaderFile,
+		".jpeg": esbuildApi.LoaderFile,
+		".gif":  esbuildApi.LoaderFile,
+		".bmp":  esbuildApi.LoaderFile,
+	},
+}
+
+func BuildServer(buildContents, frontendDir, assetRoute string) (BuildResult, error) {
+	opts := esbuildApi.BuildOptions{
 		Stdin: &esbuildApi.StdinOptions{
 			Contents:   buildContents,
 			Loader:     esbuildApi.LoaderTSX,
 			ResolveDir: frontendDir,
 		},
-		Bundle:            true,
-		Write:             false,
-		Outdir:            "/",
-		Metafile:          parseMetafile,
-		MinifyWhitespace:  os.Getenv("APP_ENV") == "production", // Minify in production
-		MinifyIdentifiers: os.Getenv("APP_ENV") == "production",
-		MinifySyntax:      os.Getenv("APP_ENV") == "production",
-		AssetNames:        fmt.Sprintf("%s/[name]", strings.TrimPrefix(assetRoute, "/")),
+		Platform:   esbuildApi.PlatformNode,
+		Bundle:     true,
+		Write:      false,
+		Outdir:     "/",
+		Metafile:   false,
+		AssetNames: fmt.Sprintf("%s/[name]", strings.TrimPrefix(assetRoute, "/")),
 		Loader: map[string]esbuildApi.Loader{ // for loading images properly
 			".png":  esbuildApi.LoaderFile,
 			".svg":  esbuildApi.LoaderFile,
@@ -38,7 +57,39 @@ func Build(buildContents, frontendDir, assetRoute string, parseMetafile bool) (B
 			".gif":  esbuildApi.LoaderFile,
 			".bmp":  esbuildApi.LoaderFile,
 		},
-	})
+	}
+	return build(opts, false)
+}
+
+func BuildClient(buildContents, frontendDir, assetRoute string) (BuildResult, error) {
+	opts := esbuildApi.BuildOptions{
+		Stdin: &esbuildApi.StdinOptions{
+			Contents:   buildContents,
+			Loader:     esbuildApi.LoaderTSX,
+			ResolveDir: frontendDir,
+		},
+		Bundle:     true,
+		Write:      false,
+		Outdir:     "/",
+		Metafile:   true,
+		AssetNames: fmt.Sprintf("%s/[name]", strings.TrimPrefix(assetRoute, "/")),
+		Loader: map[string]esbuildApi.Loader{ // for loading images properly
+			".png":  esbuildApi.LoaderFile,
+			".svg":  esbuildApi.LoaderFile,
+			".jpg":  esbuildApi.LoaderFile,
+			".jpeg": esbuildApi.LoaderFile,
+			".gif":  esbuildApi.LoaderFile,
+			".bmp":  esbuildApi.LoaderFile,
+		},
+	}
+	return build(opts, true)
+}
+
+func build(buildOptions esbuildApi.BuildOptions, isClient bool) (BuildResult, error) {
+	buildOptions.MinifyWhitespace = os.Getenv("APP_ENV") == "production"
+	buildOptions.MinifyIdentifiers = os.Getenv("APP_ENV") == "production"
+	buildOptions.MinifySyntax = os.Getenv("APP_ENV") == "production"
+	result := esbuildApi.Build(buildOptions)
 	if len(result.Errors) > 0 {
 		fileLocation := "unknown"
 		lineNum := "unknown"
@@ -57,7 +108,7 @@ func Build(buildContents, frontendDir, assetRoute string, parseMetafile bool) (B
 			br.CSS = string(file.Contents)
 		}
 	}
-	if parseMetafile {
+	if isClient {
 		br.Dependencies = getDependencyPathsFromMetafile(result.Metafile)
 	}
 	return br, nil

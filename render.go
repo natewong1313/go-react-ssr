@@ -70,10 +70,12 @@ func (rt *renderTask) Start() (ServerRenderResult, ClientRenderResult, error) {
 
 	serverRenderResult := <-rt.serverRenderResult
 	if serverRenderResult.err != nil {
+		rt.logger.Error().Err(serverRenderResult.err).Msg("Failed to build for server")
 		return ServerRenderResult{}, ClientRenderResult{}, serverRenderResult.err
 	}
 	clientBuildResult := <-rt.clientRenderResult
 	if clientBuildResult.err != nil {
+		rt.logger.Error().Err(clientBuildResult.err).Msg("Failed to build for client")
 		return ServerRenderResult{}, ClientRenderResult{}, clientBuildResult.err
 	}
 
@@ -106,10 +108,13 @@ func (rt *renderTask) serverRender() {
 		}
 		serverBuild = build
 	}
-	renderedHTML, err := reactbuilder.RenderReactToHTML(serverBuild.JS, rt.props)
-	if err == nil && !ok {
-		rt.engine.CacheManager.SetServerBuild(rt.filePath, serverBuild)
+	js := injectProps(serverBuild.JS, rt.props)
+	serverRenderJSFilePath, err := rt.saveServerRenderFile(js)
+	if err != nil {
+		rt.serverRenderResult <- ServerRenderResult{err: err}
+		return
 	}
+	renderedHTML, err := reactbuilder.RenderReactToHTML(serverRenderJSFilePath)
 	rt.serverRenderResult <- ServerRenderResult{html: renderedHTML, css: serverBuild.CSS, err: err}
 }
 
@@ -125,22 +130,25 @@ func (rt *renderTask) buildReactServerFile() (reactbuilder.BuildResult, error) {
 	if err != nil {
 		return reactbuilder.BuildResult{}, err
 	}
-	buildResult, err := reactbuilder.Build(contents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute, false)
+	buildResult, err := reactbuilder.BuildServer(contents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute)
 	if err != nil {
-		return reactbuilder.BuildResult{}, err
-	}
-
-	// Write js to file, future use
-	cacheDir, err := utils.GetServerBuildCacheDir(rt.routeID)
-	if err != nil {
-		return reactbuilder.BuildResult{}, err
-	}
-	jsFilePath := fmt.Sprintf("%s/render.js", cacheDir)
-	if err = os.WriteFile(jsFilePath, []byte(buildResult.JS), 0644); err != nil {
 		return reactbuilder.BuildResult{}, err
 	}
 
 	return buildResult, nil
+}
+
+func (rt *renderTask) saveServerRenderFile(js string) (string, error) {
+	cacheDir, err := utils.GetServerBuildCacheDir(rt.routeID)
+	if err != nil {
+		return "", err
+	}
+	jsFilePath := fmt.Sprintf("%s/render.js", cacheDir)
+	// Write file if not exists
+	if err = os.WriteFile(jsFilePath, []byte(js), 0644); err != nil {
+		return "", err
+	}
+	return jsFilePath, nil
 }
 
 type ClientRenderResult struct {
@@ -176,7 +184,7 @@ func (rt *renderTask) buildReactClientFile() (reactbuilder.BuildResult, error) {
 	if err != nil {
 		return reactbuilder.BuildResult{}, err
 	}
-	buildResult, err := reactbuilder.Build(contents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute, true)
+	buildResult, err := reactbuilder.BuildClient(contents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute)
 	if err != nil {
 		return reactbuilder.BuildResult{}, err
 	}
@@ -185,5 +193,5 @@ func (rt *renderTask) buildReactClientFile() (reactbuilder.BuildResult, error) {
 
 // injectProps injects the props into the already compiled JS
 func injectProps(compiledJS, props string) string {
-	return fmt.Sprintf(`window.props = %s; %s`, props, compiledJS)
+	return fmt.Sprintf(`var props = %s; %s`, props, compiledJS)
 }
