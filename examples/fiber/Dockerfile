@@ -8,16 +8,12 @@ RUN go get -u github.com/natewong1313/go-react-ssr
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-w -X main.APP_ENV=production" -a -o main
 
 
-FROM node:16-alpine as build-frontend
-
-ADD ./frontend /frontend
-WORKDIR /frontend
-
-RUN npm install
-
-FROM alpine:latest
+FROM node:16-alpine
 COPY --from=build-backend /build/main ./app/main
-COPY --from=build-frontend /frontend ./app/frontend
+ADD ./frontend ./app/frontend
+
+WORKDIR /app/frontend
+RUN npm install
 
 WORKDIR /app
 RUN chmod +x ./main
