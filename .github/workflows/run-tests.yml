@@ -22,8 +22,6 @@ jobs:
       - name: Install npm dependencies
         working-directory: ./examples/frontend
         run: npm install
-      - name: Test Echo example
-        run: go test -v ./examples/echo
       - name: Test Fiber example
         run: go test -v ./examples/fiber
       - name: Setup Node for tailwind example
@@ -33,3 +31,10 @@ jobs:
         run: npm install
       - name: Test Gin example
         run: go test -v ./examples/gin
+      - name: Setup Node for material ui example
+        uses: actions/setup-node@v3
+      - name: Install npm dependencies
+        working-directory: ./examples/frontend-mui
+        run: npm install
+      - name: Test Echo example
+        run: go test -v ./examples/echo

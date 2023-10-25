@@ -15,13 +15,13 @@ var APP_ENV string
 func main() {
 	e := echo.New()
 	e.Use(middleware.Recover())
-	e.Static("/assets", "../frontend/public/")
+	e.Static("/assets", "../frontend-mui/public/")
 
 	engine, err := gossr.New(gossr.Config{
 		AppEnv:             APP_ENV,
 		AssetRoute:         "/assets",
-		FrontendDir:        "../frontend/src",
-		GeneratedTypesPath: "../frontend/src/generated.d.ts",
+		FrontendDir:        "../frontend-mui/src",
+		GeneratedTypesPath: "../frontend-mui/src/generated.d.ts",
 		PropsStructsPath:   "./models/props.go",
 		LayoutFilePath:     "Layout.tsx",
 	})

@@ -28,7 +28,7 @@ func create(cmd *cobra.Command, args []string) {
 	fmt.Println("Welcome to the creation wizard!")
 	projectDir := prompt_getProjectDirectory(args)
 	webFramework := prompt_selectWebFramework()
-	useTailwind := prompt_isUsingTailwind()
+	stylingPlugin := prompt_selectStylingPlugin()
 
 	projectDirExists := utils.CheckPathExists(projectDir)
 	if projectDirExists {
@@ -46,9 +46,9 @@ func create(cmd *cobra.Command, args []string) {
 	}
 
 	bootstrapper := Bootstrapper{
-		ProjectDir:      projectDir,
-		WebFramework:    webFramework,
-		IsUsingTailwind: useTailwind,
+		ProjectDir:    projectDir,
+		WebFramework:  webFramework,
+		StylingPlugin: stylingPlugin,
 	}
 	bootstrapper.Start()
 

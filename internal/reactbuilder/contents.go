@@ -5,6 +5,17 @@ import (
 	"text/template"
 )
 
+var baseTemplate = `
+import React from "react";
+{{range $import := .Imports}}{{$import}} {{end}}
+import App from "{{ .FilePath }}";
+{{ if .SuppressConsoleLog }}console.log = () => {};{{ end }}
+{{ .RenderFunction }}`
+var serverRenderFunction = `process.stdout.write(renderToString(<App {...props} />))`
+var serverRenderFunctionWithLayout = `process.stdout.write(renderToString(<Layout><App {...props} /></Layout>))`
+var clientRenderFunction = `hydrateRoot(document.getElementById("root"), <App {...props} />);`
+var clientRenderFunctionWithLayout = `hydrateRoot(document.getElementById("root"), <Layout><App {...props} /></Layout>);`
+
 func buildWithTemplate(buildTemplate string, params map[string]interface{}) (string, error) {
 	templ, err := template.New("buildTemplate").Parse(buildTemplate)
 	if err != nil {
@@ -18,40 +29,22 @@ func buildWithTemplate(buildTemplate string, params map[string]interface{}) (str
 	return out.String(), nil
 }
 
-var serverTemplate = `
-import React from "react";
-import { renderToString } from "react-dom/server";
-{{range $import := .Imports}} {{$import}} {{end}}
-function render() {
-	const App = require("{{ .FilePath }}").default;
-	return {{ .RenderFunction }};
-}
-globalThis.render = render;`
-var serverRenderFunction = `renderToString(<App {...props} />)`
-var serverRenderFunctionWithLayout = `renderToString(<Layout><App {...props} /></Layout>)`
-
 func GenerateServerBuildContents(imports []string, filePath string, useLayout bool) (string, error) {
+	imports = append(imports, `import { renderToString } from "react-dom/server";`)
 	params := map[string]interface{}{
-		"Imports":        imports,
-		"FilePath":       filePath,
-		"RenderFunction": serverRenderFunction,
+		"Imports":            imports,
+		"FilePath":           filePath,
+		"RenderFunction":     serverRenderFunction,
+		"SuppressConsoleLog": true,
 	}
 	if useLayout {
 		params["RenderFunction"] = serverRenderFunctionWithLayout
 	}
-	return buildWithTemplate(serverTemplate, params)
+	return buildWithTemplate(baseTemplate, params)
 }
 
-var clientTemplate = `
-import React from "react";
-import { hydrateRoot } from "react-dom/client";
-{{range $import := .Imports}} {{$import}} {{end}}
-import App from "{{ .FilePath }}";
-{{ .RenderFunction }}`
-var clientRenderFunction = `hydrateRoot(document.getElementById("root"), <App {...props} />);`
-var clientRenderFunctionWithLayout = `hydrateRoot(document.getElementById("root"), <Layout><App {...props} /></Layout>);`
-
 func GenerateClientBuildContents(imports []string, filePath string, useLayout bool) (string, error) {
+	imports = append(imports, `import { hydrateRoot } from "react-dom/client";`)
 	params := map[string]interface{}{
 		"Imports":        imports,
 		"FilePath":       filePath,
@@ -60,5 +53,5 @@ func GenerateClientBuildContents(imports []string, filePath string, useLayout bo
 	if useLayout {
 		params["RenderFunction"] = clientRenderFunctionWithLayout
 	}
-	return buildWithTemplate(clientTemplate, params)
+	return buildWithTemplate(baseTemplate, params)
 }
