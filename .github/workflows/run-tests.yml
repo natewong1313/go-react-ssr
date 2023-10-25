@@ -31,5 +31,10 @@ jobs:
       - name: Install npm dependencies
         working-directory: ./examples/frontend-tailwind
         run: npm install
+      - name: Setup Node for material ui example
+        uses: actions/setup-node@v3
+      - name: Install npm dependencies
+        working-directory: ./examples/frontend-mui
+        run: npm install
       - name: Test Gin example
         run: go test -v ./examples/gin
