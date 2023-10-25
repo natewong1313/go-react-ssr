@@ -7,16 +7,17 @@ import (
 	"path"
 )
 
+// Config is the config for starting the engine
 type Config struct {
-	AppEnv              string
-	AssetRoute          string
-	FrontendDir         string
-	GeneratedTypesPath  string
-	PropsStructsPath    string
-	LayoutFilePath      string
-	LayoutCSSFilePath   string
-	TailwindConfigPath  string
-	HotReloadServerPort int
+	AppEnv              string // "production" or "development"
+	AssetRoute          string // The route to serve assets from, e.g. "/assets"
+	FrontendDir         string // The path to the frontend folder, where your React app lives
+	GeneratedTypesPath  string // The path to the generated types file
+	PropsStructsPath    string // The path to the Go structs file, the structs will be generated to TS types
+	LayoutFilePath      string // The path to the layout file, relative to the frontend dir
+	LayoutCSSFilePath   string // The path to the layout css file, relative to the frontend dir
+	TailwindConfigPath  string // The path to the tailwind config file
+	HotReloadServerPort int    // The port to run the hot reload server on, 3001 by default
 }
 
 // Validate validates the config

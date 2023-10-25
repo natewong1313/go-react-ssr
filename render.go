@@ -12,6 +12,7 @@ import (
 	"runtime"
 )
 
+// RenderConfig is the config for rendering a route
 type RenderConfig struct {
 	File     string
 	Title    string
@@ -19,6 +20,7 @@ type RenderConfig struct {
 	Props    interface{}
 }
 
+// RenderRoute renders a route to html
 func (engine *Engine) RenderRoute(renderConfig RenderConfig) []byte {
 	// routeID is the program counter of the caller
 	pc, _, _, _ := runtime.Caller(1)
@@ -29,26 +31,24 @@ func (engine *Engine) RenderRoute(renderConfig RenderConfig) []byte {
 		return html.RenderError(err, routeID)
 	}
 	task := renderTask{
-		engine:             engine,
-		logger:             zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
-		routeID:            routeID,
-		props:              props,
-		filePath:           filepath.ToSlash(utils.GetFullFilePath(engine.Config.FrontendDir + "/" + renderConfig.File)),
-		config:             renderConfig,
-		serverRenderResult: make(chan ServerRenderResult),
-		clientRenderResult: make(chan ClientRenderResult),
+		engine:   engine,
+		logger:   zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
+		routeID:  routeID,
+		props:    props,
+		filePath: filepath.ToSlash(utils.GetFullFilePath(engine.Config.FrontendDir + "/" + renderConfig.File)),
+		config:   renderConfig,
 	}
-	serverRenderResult, clientRenderResult, err := task.Start()
+	renderedHTML, css, js, err := task.Start()
 	if err != nil {
 		return html.RenderError(err, task.routeID)
 	}
 	return html.RenderHTMLString(html.Params{
 		Title:      renderConfig.Title,
 		MetaTags:   renderConfig.MetaTags,
-		JS:         template.JS(clientRenderResult.js),
-		CSS:        template.CSS(serverRenderResult.css),
+		JS:         template.JS(js),
+		CSS:        template.CSS(css),
 		RouteID:    task.routeID,
-		ServerHTML: template.HTML(serverRenderResult.html),
+		ServerHTML: template.HTML(renderedHTML),
 	})
 }
 

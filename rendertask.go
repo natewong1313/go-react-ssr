@@ -18,24 +18,26 @@ type renderTask struct {
 	filePath           string
 	props              string
 	config             RenderConfig
-	serverRenderResult chan ServerRenderResult
-	clientRenderResult chan ClientRenderResult
+	serverRenderResult chan serverRenderResult
+	clientRenderResult chan clientRenderResult
 }
 
-type ServerRenderResult struct {
+type serverRenderResult struct {
 	html string
 	css  string
 	err  error
 }
 
-type ClientRenderResult struct {
+type clientRenderResult struct {
 	js           string
 	dependencies []string
 	err          error
 }
 
-// Start starts the render task
-func (rt *renderTask) Start() (ServerRenderResult, ClientRenderResult, error) {
+// Start starts the render task, returns the rendered html, css, and js for hydration
+func (rt *renderTask) Start() (string, string, string, error) {
+	rt.serverRenderResult = make(chan serverRenderResult)
+	rt.clientRenderResult = make(chan clientRenderResult)
 	// Assigns the parent file to the routeID so that the cache can be invalidated when the parent file changes
 	rt.engine.CacheManager.SetParentFile(rt.routeID, rt.filePath)
 
@@ -44,20 +46,20 @@ func (rt *renderTask) Start() (ServerRenderResult, ClientRenderResult, error) {
 	go rt.doRender("client")
 
 	// Wait for both to finish
-	serverRenderResult := <-rt.serverRenderResult
-	if serverRenderResult.err != nil {
-		rt.logger.Error().Err(serverRenderResult.err).Msg("Failed to build for server")
-		return ServerRenderResult{}, ClientRenderResult{}, serverRenderResult.err
+	srResult := <-rt.serverRenderResult
+	if srResult.err != nil {
+		rt.logger.Error().Err(srResult.err).Msg("Failed to build for server")
+		return "", "", "", srResult.err
 	}
-	clientBuildResult := <-rt.clientRenderResult
-	if clientBuildResult.err != nil {
-		rt.logger.Error().Err(clientBuildResult.err).Msg("Failed to build for client")
-		return ServerRenderResult{}, ClientRenderResult{}, clientBuildResult.err
+	crResult := <-rt.clientRenderResult
+	if crResult.err != nil {
+		rt.logger.Error().Err(crResult.err).Msg("Failed to build for client")
+		return "", "", "", crResult.err
 	}
 
 	// Set the parent file dependencies so that the cache can be invalidated a dependency changes
-	go rt.engine.CacheManager.SetParentFileDependencies(rt.filePath, clientBuildResult.dependencies)
-	return serverRenderResult, clientBuildResult, nil
+	go rt.engine.CacheManager.SetParentFileDependencies(rt.filePath, crResult.dependencies)
+	return srResult.html, srResult.css, crResult.js, nil
 }
 
 func (rt *renderTask) doRender(buildType string) {
@@ -84,9 +86,9 @@ func (rt *renderTask) doRender(buildType string) {
 		}
 		// Then call that file with node to get the rendered HTML
 		renderedHTML, err := renderReactToHTML(jsFilePath)
-		rt.serverRenderResult <- ServerRenderResult{html: renderedHTML, css: build.CSS, err: err}
+		rt.serverRenderResult <- serverRenderResult{html: renderedHTML, css: build.CSS, err: err}
 	} else {
-		rt.clientRenderResult <- ClientRenderResult{js: js, dependencies: build.Dependencies}
+		rt.clientRenderResult <- clientRenderResult{js: js, dependencies: build.Dependencies}
 	}
 }
 
@@ -131,9 +133,9 @@ func (rt *renderTask) getBuildContents(buildType string) (string, error) {
 // handleBuildError handles the error from building the file and sends it to the appropriate channel
 func (rt *renderTask) handleBuildError(err error, buildType string) {
 	if buildType == "server" {
-		rt.serverRenderResult <- ServerRenderResult{err: err}
+		rt.serverRenderResult <- serverRenderResult{err: err}
 	} else {
-		rt.clientRenderResult <- ClientRenderResult{err: err}
+		rt.clientRenderResult <- clientRenderResult{err: err}
 	}
 }
 
