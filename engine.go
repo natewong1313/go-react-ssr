@@ -1,6 +1,7 @@
 package go_ssr
 
 import (
+	"github.com/natewong1313/go-react-ssr/internal/cache"
 	"github.com/natewong1313/go-react-ssr/internal/typeconverter"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"github.com/rs/zerolog"
@@ -11,7 +12,7 @@ type Engine struct {
 	Logger                  zerolog.Logger
 	Config                  *Config
 	HotReload               *HotReload
-	CacheManager            *CacheManager
+	CacheManager            *cache.Manager
 	CachedLayoutCSSFilePath string
 }
 
@@ -19,7 +20,7 @@ func New(config Config) (*Engine, error) {
 	engine := &Engine{
 		Logger:       zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
 		Config:       &config,
-		CacheManager: NewCacheManager(),
+		CacheManager: cache.NewManager(),
 	}
 	err := config.Validate()
 	if err != nil {
