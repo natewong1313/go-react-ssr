@@ -16,6 +16,7 @@ type Engine struct {
 	CachedLayoutCSSFilePath string
 }
 
+// New creates a new gossr Engine instance
 func New(config Config) (*Engine, error) {
 	engine := &Engine{
 		Logger:       zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
@@ -29,12 +30,12 @@ func New(config Config) (*Engine, error) {
 	}
 	utils.CleanCacheDirectories()
 
-	if err := os.Setenv("APP_ENV", config.AppEnv); err != nil {
+	if err = os.Setenv("APP_ENV", config.AppEnv); err != nil {
 		engine.Logger.Err(err).Msg("Failed to set APP_ENV environment variable")
 	}
 	// If using a layout css file, build it and cache it
 	if config.LayoutCSSFilePath != "" {
-		if err := engine.BuildLayoutCSSFile(); err != nil {
+		if err = engine.BuildLayoutCSSFile(); err != nil {
 			engine.Logger.Err(err).Msg("Failed to build layout css file")
 			return nil, err
 		}

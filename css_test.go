@@ -8,14 +8,14 @@ import (
 )
 
 func TestEngine_BuildLayoutCSSFile(t *testing.T) {
-	type Test struct {
+	type test struct {
 		name          string
 		shouldContain string
 		config        *Config
 	}
 	originalContents, err := os.ReadFile("./examples/frontend/src/Home.css")
 	assert.Nil(t, err, "ReadFile should not return an error")
-	tests := []Test{
+	tests := []test{
 		{
 			name:          "should clone layout css file",
 			shouldContain: string(originalContents),
@@ -36,19 +36,19 @@ func TestEngine_BuildLayoutCSSFile(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			test.config.setFilePaths()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.config.setFilePaths()
 			engine := &Engine{
 				Logger: zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
-				Config: test.config,
+				Config: tt.config,
 			}
 			err = engine.BuildLayoutCSSFile()
-			assert.Nil(t, err, "BuildLayoutCSSFile should not return an error")
+			assert.Nil(t, err, "BuildLayoutCSSFile should not return an error, got %v", err)
 			assert.NotNilf(t, engine.CachedLayoutCSSFilePath, "CachedLayoutCSSFilePath should not be nil")
 			contents, err := os.ReadFile(engine.CachedLayoutCSSFilePath)
-			assert.Nil(t, err, "ReadFile should not return an error")
-			assert.Contains(t, string(contents), test.shouldContain)
+			assert.Nil(t, err, "ReadFile should not return an error, got %v", err)
+			assert.Contains(t, string(contents), tt.shouldContain)
 		})
 	}
 }
