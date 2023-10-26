@@ -23,16 +23,15 @@ func New(config Config) (*Engine, error) {
 		Config:       &config,
 		CacheManager: cache.NewManager(),
 	}
+	if err := os.Setenv("APP_ENV", config.AppEnv); err != nil {
+		engine.Logger.Err(err).Msg("Failed to set APP_ENV environment variable")
+	}
 	err := config.Validate()
 	if err != nil {
 		engine.Logger.Err(err).Msg("Failed to validate config")
 		return nil, err
 	}
 	utils.CleanCacheDirectories()
-
-	if err = os.Setenv("APP_ENV", config.AppEnv); err != nil {
-		engine.Logger.Err(err).Msg("Failed to set APP_ENV environment variable")
-	}
 	// If using a layout css file, build it and cache it
 	if config.LayoutCSSFilePath != "" {
 		if err = engine.BuildLayoutCSSFile(); err != nil {
