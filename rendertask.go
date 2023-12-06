@@ -170,6 +170,12 @@ func renderReactToHTML(jsFilePath string, jsRuntime string) (string, error) {
 	if jsRuntime == "bun" {
 		command = []string{"bun", "run"}
 	}
+	if jsRuntime == "yarn" {
+		command = []string{"yarn", "run"}
+	}
+	if jsRuntime == "pnpm" {
+		command = []string{"pnpm", "run"}
+	}
 	command = append(command, jsFilePath)
 	cmd := exec.Command(command[0], command[1:]...)
 	stdOut := new(strings.Builder)
