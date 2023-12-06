@@ -3,12 +3,13 @@ package go_ssr
 import (
 	"errors"
 	"fmt"
-	"github.com/natewong1313/go-react-ssr/internal/reactbuilder"
-	"github.com/natewong1313/go-react-ssr/internal/utils"
-	"github.com/rs/zerolog"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/natewong1313/go-react-ssr/internal/reactbuilder"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
+	"github.com/rs/zerolog"
 )
 
 type renderTask struct {
@@ -85,7 +86,7 @@ func (rt *renderTask) doRender(buildType string) {
 			return
 		}
 		// Then call that file with node to get the rendered HTML
-		renderedHTML, err := renderReactToHTML(jsFilePath)
+		renderedHTML, err := renderReactToHTML(jsFilePath, rt.engine.Config.JSRuntime)
 		rt.serverRenderResult <- serverRenderResult{html: renderedHTML, css: build.CSS, err: err}
 	} else {
 		rt.clientRenderResult <- clientRenderResult{js: js, dependencies: build.Dependencies}
@@ -164,8 +165,13 @@ func (rt *renderTask) saveServerRenderFile(js string) (string, error) {
 }
 
 // renderReactToHTML uses node to execute the server js file which outputs the rendered HTML
-func renderReactToHTML(jsFilePath string) (string, error) {
-	cmd := exec.Command("node", jsFilePath)
+func renderReactToHTML(jsFilePath string, jsRuntime string) (string, error) {
+	command := []string{"node"}
+	if jsRuntime == "bun" {
+		command = []string{"bun", "run"}
+	}
+	command = append(command, jsFilePath)
+	cmd := exec.Command(command[0], command[1:]...)
 	stdOut := new(strings.Builder)
 	stdErr := new(strings.Builder)
 	cmd.Stdout = stdOut

@@ -2,9 +2,10 @@ package go_ssr
 
 import (
 	"fmt"
-	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"os"
 	"path"
+
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 )
 
 // Config is the config for starting the engine
@@ -18,6 +19,7 @@ type Config struct {
 	LayoutCSSFilePath   string // The path to the layout css file, relative to the frontend dir
 	TailwindConfigPath  string // The path to the tailwind config file
 	HotReloadServerPort int    // The port to run the hot reload server on, 3001 by default
+	JSRuntime           string // The JS runtime to use, "node" or "bun"
 }
 
 // Validate validates the config

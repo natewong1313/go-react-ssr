@@ -29,7 +29,8 @@ func create(cmd *cobra.Command, args []string) {
 	projectDir := prompt_getProjectDirectory(args)
 	webFramework := prompt_selectWebFramework()
 	stylingPlugin := prompt_selectStylingPlugin()
-
+	packageManager := prompt_packageManager()
+	checkPackageManagerInstalled(packageManager)
 	projectDirExists := utils.CheckPathExists(projectDir)
 	if projectDirExists {
 		projectDirEmpty := utils.CheckPathEmpty(projectDir)
@@ -46,9 +47,10 @@ func create(cmd *cobra.Command, args []string) {
 	}
 
 	bootstrapper := Bootstrapper{
-		ProjectDir:    projectDir,
-		WebFramework:  webFramework,
-		StylingPlugin: stylingPlugin,
+		PackageManager: packageManager,
+		ProjectDir:     projectDir,
+		WebFramework:   webFramework,
+		StylingPlugin:  stylingPlugin,
 	}
 	bootstrapper.Start()
 
@@ -63,7 +65,15 @@ func checkNodeInstalled() bool {
 	}
 	return true
 }
-
+func checkPackageManagerInstalled(packageManager string) bool {
+	cmd := exec.Command(packageManager, "-v")
+	err := cmd.Run()
+	if err != nil {
+		logger.L.Error().Msg(packageManager + " is not installed. Please install " + packageManager + " and try again.")
+		os.Exit(1)
+	}
+	return true
+}
 func wipeDirectory(projectDir string) {
 	logger.L.Info().Msg("Wiping directory " + projectDir)
 	if err := os.RemoveAll(projectDir); err != nil {

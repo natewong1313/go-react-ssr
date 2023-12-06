@@ -74,7 +74,18 @@ func prompt_isUsingTypescript() bool {
 	}
 	return strings.ToLower(result) == "y"
 }
+func prompt_packageManager() string {
+	prompt := promptui.Select{
+		Label: "Select a package manager to use",
+		Items: []string{"npm", "yarn", "pnpm", "bun"},
+	}
 
+	_, result, err := prompt.Run()
+	if err != nil {
+		utils.HandleError(err)
+	}
+	return result
+}
 func prompt_shouldWipeDirectory() bool {
 	prompt := promptui.Prompt{
 		Label:   "Directory is not empty. Continue? (this will wipe the directory) (y/n)",
