@@ -13,12 +13,13 @@ import (
 )
 
 type Bootstrapper struct {
-	TempDirPath   string
-	ProjectDir    string
-	GoModuleName  string
-	FrontendDir   string
-	WebFramework  string
-	StylingPlugin string
+	TempDirPath    string
+	ProjectDir     string
+	GoModuleName   string
+	FrontendDir    string
+	WebFramework   string
+	StylingPlugin  string
+	PackageManager string
 }
 
 func (b *Bootstrapper) Start() {
@@ -80,7 +81,7 @@ func (b *Bootstrapper) createFrontendFolder() {
 
 func (b *Bootstrapper) installNPMDependencies() {
 	logger.L.Info().Msg("Installing npm dependencies")
-	cmd := exec.Command("npm", "install")
+	cmd := exec.Command(b.PackageManager, "install")
 	cmd.Dir = b.ProjectDir + "/frontend"
 	err := cmd.Run()
 	if err != nil {
