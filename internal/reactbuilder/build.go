@@ -2,11 +2,12 @@ package reactbuilder
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/buger/jsonparser"
 	esbuildApi "github.com/evanw/esbuild/pkg/api"
 	"github.com/natewong1313/go-react-ssr/internal/utils"
-	"os"
-	"strings"
 )
 
 type BuildResult struct {
@@ -22,12 +23,15 @@ func BuildServer(buildContents, frontendDir, assetRoute string) (BuildResult, er
 			Loader:     esbuildApi.LoaderTSX,
 			ResolveDir: frontendDir,
 		},
-		Platform:   esbuildApi.PlatformNode,
-		Bundle:     true,
-		Write:      false,
-		Outdir:     "/",
-		Metafile:   false,
-		AssetNames: fmt.Sprintf("%s/[name]", strings.TrimPrefix(assetRoute, "/")),
+		Platform:          esbuildApi.PlatformNode,
+		Bundle:            true,
+		Write:             false,
+		Outdir:            "/",
+		Metafile:          false,
+		AssetNames:        fmt.Sprintf("%s/[name]", strings.TrimPrefix(assetRoute, "/")),
+		MinifyWhitespace:  true,
+		MinifyIdentifiers: true,
+		MinifySyntax:      true,
 		Loader: map[string]esbuildApi.Loader{ // for loading images properly
 			".png":   esbuildApi.LoaderFile,
 			".svg":   esbuildApi.LoaderFile,
@@ -51,11 +55,14 @@ func BuildClient(buildContents, frontendDir, assetRoute string) (BuildResult, er
 			Loader:     esbuildApi.LoaderTSX,
 			ResolveDir: frontendDir,
 		},
-		Bundle:     true,
-		Write:      false,
-		Outdir:     "/",
-		Metafile:   true,
-		AssetNames: fmt.Sprintf("%s/[name]", strings.TrimPrefix(assetRoute, "/")),
+		Bundle:            true,
+		Write:             false,
+		Outdir:            "/",
+		Metafile:          true,
+		AssetNames:        fmt.Sprintf("%s/[name]", strings.TrimPrefix(assetRoute, "/")),
+		MinifyWhitespace:  os.Getenv("APP_ENV") == "production",
+		MinifyIdentifiers: os.Getenv("APP_ENV") == "production",
+		MinifySyntax:      os.Getenv("APP_ENV") == "production",
 		Loader: map[string]esbuildApi.Loader{ // for loading images properly
 			".png":   esbuildApi.LoaderFile,
 			".svg":   esbuildApi.LoaderFile,
@@ -73,9 +80,6 @@ func BuildClient(buildContents, frontendDir, assetRoute string) (BuildResult, er
 }
 
 func build(buildOptions esbuildApi.BuildOptions, isClient bool) (BuildResult, error) {
-	buildOptions.MinifyWhitespace = os.Getenv("APP_ENV") == "production"
-	buildOptions.MinifyIdentifiers = os.Getenv("APP_ENV") == "production"
-	buildOptions.MinifySyntax = os.Getenv("APP_ENV") == "production"
 	result := esbuildApi.Build(buildOptions)
 	if len(result.Errors) > 0 {
 		fileLocation := "unknown"

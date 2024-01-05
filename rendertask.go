@@ -1,14 +1,11 @@
 package go_ssr
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/buke/quickjs-go"
 	"github.com/natewong1313/go-react-ssr/internal/reactbuilder"
-	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"github.com/rs/zerolog"
-	"os"
-	"os/exec"
-	"strings"
 )
 
 type renderTask struct {
@@ -78,14 +75,8 @@ func (rt *renderTask) doRender(buildType string) {
 	// JS is built without props so that the props can be injected into cached JS builds
 	js := injectProps(build.JS, rt.props)
 	if buildType == "server" {
-		// Save the server js to a file to be executed by node
-		jsFilePath, err := rt.saveServerRenderFile(js)
-		if err != nil {
-			rt.handleBuildError(err, buildType)
-			return
-		}
 		// Then call that file with node to get the rendered HTML
-		renderedHTML, err := renderReactToHTML(jsFilePath)
+		renderedHTML, err := renderReactToHTMLNew(js)
 		rt.serverRenderResult <- serverRenderResult{html: renderedHTML, css: build.CSS, err: err}
 	} else {
 		rt.clientRenderResult <- clientRenderResult{js: js, dependencies: build.Dependencies}
@@ -153,26 +144,19 @@ func injectProps(compiledJS, props string) string {
 	return fmt.Sprintf(`var props = %s; %s`, props, compiledJS)
 }
 
-// saveServerRenderFile saves the generated server js to a file to be executed by node
-func (rt *renderTask) saveServerRenderFile(js string) (string, error) {
-	cacheDir, err := utils.GetServerBuildCacheDir(rt.routeID)
+var textEncoderPolyfill = `function TextEncoder(){}TextEncoder.prototype.encode=function(string){var octets=[];var length=string.length;var i=0;while(i<length){var codePoint=string.codePointAt(i);var c=0;var bits=0;if(codePoint<=0x0000007F){c=0;bits=0x00}else if(codePoint<=0x000007FF){c=6;bits=0xC0}else if(codePoint<=0x0000FFFF){c=12;bits=0xE0}else if(codePoint<=0x001FFFFF){c=18;bits=0xF0}octets.push(bits|(codePoint>>c));c-=6;while(c>=0){octets.push(0x80|((codePoint>>c)&0x3F));c-=6}i+=codePoint>=0x10000?2:1}return octets};function TextDecoder(){}TextDecoder.prototype.decode=function(octets){var string="";var i=0;while(i<octets.length){var octet=octets[i];var bytesNeeded=0;var codePoint=0;if(octet<=0x7F){bytesNeeded=0;codePoint=octet&0xFF}else if(octet<=0xDF){bytesNeeded=1;codePoint=octet&0x1F}else if(octet<=0xEF){bytesNeeded=2;codePoint=octet&0x0F}else if(octet<=0xF4){bytesNeeded=3;codePoint=octet&0x07}if(octets.length-i-bytesNeeded>0){var k=0;while(k<bytesNeeded){octet=octets[i+k+1];codePoint=(codePoint<<6)|(octet&0x3F);k+=1}}else{codePoint=0xFFFD;bytesNeeded=octets.length-i}string+=String.fromCodePoint(codePoint);i+=bytesNeeded+1}return string};`
+var processPolyfill = `var process = {env: {NODE_ENV: "production"}};`
+var consolePolyfill = `var console = {log: function(){}};`
+
+// renderReactToHTML uses node to execute the server js file which outputs the rendered HTML
+func renderReactToHTMLNew(js string) (string, error) {
+	rt := quickjs.NewRuntime()
+	defer rt.Close()
+	ctx := rt.NewContext()
+	defer ctx.Close()
+	res, err := ctx.Eval(textEncoderPolyfill + processPolyfill + consolePolyfill + js)
 	if err != nil {
 		return "", err
 	}
-	jsFilePath := fmt.Sprintf("%s/render.js", cacheDir)
-	return jsFilePath, os.WriteFile(jsFilePath, []byte(js), 0644)
-}
-
-// renderReactToHTML uses node to execute the server js file which outputs the rendered HTML
-func renderReactToHTML(jsFilePath string) (string, error) {
-	cmd := exec.Command("node", jsFilePath)
-	stdOut := new(strings.Builder)
-	stdErr := new(strings.Builder)
-	cmd.Stdout = stdOut
-	cmd.Stderr = stdErr
-	err := cmd.Run()
-	if err != nil {
-		return "", errors.New(stdErr.String())
-	}
-	return stdOut.String(), nil
+	return res.String(), nil
 }
