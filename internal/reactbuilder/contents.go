@@ -11,8 +11,8 @@ import React from "react";
 import App from "{{ .FilePath }}";
 {{ if .SuppressConsoleLog }}console.log = () => {};{{ end }}
 {{ .RenderFunction }}`
-var serverRenderFunction = `globalThis.out = renderToString(<App {...props} />);`
-var serverRenderFunctionWithLayout = `globalThis.out = renderToString(<Layout><App {...props} /></Layout>);`
+var serverRenderFunction = `renderToString(<App {...props} />);`
+var serverRenderFunctionWithLayout = `renderToString(<Layout><App {...props} /></Layout>);`
 var clientRenderFunction = `hydrateRoot(document.getElementById("root"), <App {...props} />);`
 var clientRenderFunctionWithLayout = `hydrateRoot(document.getElementById("root"), <Layout><App {...props} /></Layout>);`
 
