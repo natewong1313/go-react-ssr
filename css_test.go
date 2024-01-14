@@ -1,10 +1,11 @@
 package go_ssr
 
 import (
-	"github.com/rs/zerolog"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEngine_BuildLayoutCSSFile(t *testing.T) {
@@ -27,7 +28,7 @@ func TestEngine_BuildLayoutCSSFile(t *testing.T) {
 		},
 		{
 			name:          "should build layout css file with tailwind",
-			shouldContain: "html {",
+			shouldContain: "tailwindcss",
 			config: &Config{
 				AppEnv:             "production",
 				FrontendDir:        "./examples/frontend-tailwind/src",

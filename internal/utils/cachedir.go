@@ -54,7 +54,9 @@ func GetServerBuildCacheDir(fileName string) (string, error) {
 	}
 	serverBuildCacheDir := filepath.Join(cacheDir, "builds")
 	err = os.MkdirAll(serverBuildCacheDir, os.ModePerm)
-
+	if err != nil {
+		return "", err
+	}
 	routeCacheDir := filepath.Join(serverBuildCacheDir, fileName)
 	err = os.MkdirAll(routeCacheDir, os.ModePerm)
 	return routeCacheDir, err
@@ -69,4 +71,15 @@ func GetCSSCacheDir() (string, error) {
 	cssCacheDir := filepath.Join(cacheDir, "css_builds")
 	err = os.MkdirAll(cssCacheDir, os.ModePerm)
 	return cssCacheDir, err
+}
+
+// GetTailwindExecutableDir returns the path to the tailwind executable directory
+func GetTailwindExecutableDir() (string, error) {
+	cacheDir, err := createCacheDirIfNotExists()
+	if err != nil {
+		return "", err
+	}
+	tailwindCacheDir := filepath.Join(cacheDir, "tailwind")
+	err = os.MkdirAll(tailwindCacheDir, os.ModePerm)
+	return tailwindCacheDir, err
 }

@@ -1,14 +1,11 @@
 package go_ssr
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/buke/quickjs-go"
 	"github.com/natewong1313/go-react-ssr/internal/reactbuilder"
-	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"github.com/rs/zerolog"
-	"os"
-	"os/exec"
-	"strings"
 )
 
 type renderTask struct {
@@ -78,14 +75,8 @@ func (rt *renderTask) doRender(buildType string) {
 	// JS is built without props so that the props can be injected into cached JS builds
 	js := injectProps(build.JS, rt.props)
 	if buildType == "server" {
-		// Save the server js to a file to be executed by node
-		jsFilePath, err := rt.saveServerRenderFile(js)
-		if err != nil {
-			rt.handleBuildError(err, buildType)
-			return
-		}
 		// Then call that file with node to get the rendered HTML
-		renderedHTML, err := renderReactToHTML(jsFilePath)
+		renderedHTML, err := renderReactToHTMLNew(js)
 		rt.serverRenderResult <- serverRenderResult{html: renderedHTML, css: build.CSS, err: err}
 	} else {
 		rt.clientRenderResult <- clientRenderResult{js: js, dependencies: build.Dependencies}
@@ -153,26 +144,15 @@ func injectProps(compiledJS, props string) string {
 	return fmt.Sprintf(`var props = %s; %s`, props, compiledJS)
 }
 
-// saveServerRenderFile saves the generated server js to a file to be executed by node
-func (rt *renderTask) saveServerRenderFile(js string) (string, error) {
-	cacheDir, err := utils.GetServerBuildCacheDir(rt.routeID)
+// renderReactToHTML uses node to execute the server js file which outputs the rendered HTML
+func renderReactToHTMLNew(js string) (string, error) {
+	rt := quickjs.NewRuntime()
+	defer rt.Close()
+	ctx := rt.NewContext()
+	defer ctx.Close()
+	res, err := ctx.Eval(js)
 	if err != nil {
 		return "", err
 	}
-	jsFilePath := fmt.Sprintf("%s/render.js", cacheDir)
-	return jsFilePath, os.WriteFile(jsFilePath, []byte(js), 0644)
-}
-
-// renderReactToHTML uses node to execute the server js file which outputs the rendered HTML
-func renderReactToHTML(jsFilePath string) (string, error) {
-	cmd := exec.Command("node", jsFilePath)
-	stdOut := new(strings.Builder)
-	stdErr := new(strings.Builder)
-	cmd.Stdout = stdOut
-	cmd.Stderr = stdErr
-	err := cmd.Run()
-	if err != nil {
-		return "", errors.New(stdErr.String())
-	}
-	return stdOut.String(), nil
+	return res.String(), nil
 }
