@@ -2,14 +2,16 @@ package go_ssr
 
 import (
 	"fmt"
-	"github.com/fsnotify/fsnotify"
-	"github.com/gorilla/websocket"
-	"github.com/natewong1313/go-react-ssr/internal/utils"
-	"github.com/rs/zerolog"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/gorilla/websocket"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
+	"github.com/rs/zerolog"
 )
 
 type HotReload struct {
@@ -35,7 +37,13 @@ func (hr *HotReload) Start() {
 
 // startServer starts the hot reload websocket server
 func (hr *HotReload) startServer() {
-	hr.logger.Info().Msgf("Hot reload websocket running on port %d", hr.engine.Config.HotReloadServerPort)
+	port, err := getFreePort()
+	if err != nil {
+		hr.logger.Err(err).Msg("Failed to get free port")
+		return
+	}
+	os.Setenv("HOT_RELOAD_PORT", fmt.Sprintf("%d", port))
+	hr.logger.Info().Msgf("Hot reload websocket running on port %d", port)
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -61,7 +69,7 @@ func (hr *HotReload) startServer() {
 		// Add client to connectedClients
 		hr.connectedClients[string(routeID)] = append(hr.connectedClients[string(routeID)], ws)
 	})
-	err := http.ListenAndServe(fmt.Sprintf(":%d", hr.engine.Config.HotReloadServerPort), nil)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	if err != nil {
 		hr.logger.Err(err).Msg("Hot reload server quit unexpectedly")
 	}
@@ -70,13 +78,14 @@ func (hr *HotReload) startServer() {
 // startWatcher starts the file watcher
 func (hr *HotReload) startWatcher() {
 	watcher, err := fsnotify.NewWatcher()
+
 	if err != nil {
 		hr.logger.Err(err).Msg("Failed to start watcher")
 		return
 	}
 	defer watcher.Close()
 	// Walk through all files in the frontend directory and add them to the watcher
-	if err = filepath.Walk(hr.engine.Config.FrontendDir, func(path string, fi os.FileInfo, err error) error {
+	if err = filepath.Walk(hr.engine.Config.FrontendSrcDir, func(path string, fi os.FileInfo, err error) error {
 		if fi.Mode().IsDir() {
 			return watcher.Add(path)
 		}
@@ -89,6 +98,7 @@ func (hr *HotReload) startWatcher() {
 	for {
 		select {
 		case event := <-watcher.Events:
+			fmt.Println(event.Op.String(), event.Name)
 			// Watch for file created, deleted, updated, or renamed events
 			if event.Op.String() != "CHMOD" && !strings.Contains(event.Name, "gossr-temporary") {
 				filePath := utils.GetFullFilePath(event.Name)
@@ -96,16 +106,10 @@ func (hr *HotReload) startWatcher() {
 				// Store the routes that need to be reloaded
 				var routeIDS []string
 				switch {
-				case filePath == hr.engine.Config.LayoutFilePath: // If the layout file has been updated, reload all routes
-					routeIDS = hr.engine.CacheManager.GetAllRouteIDS()
-				case hr.layoutCSSFileUpdated(filePath): // If the global css file has been updated, rebuild it and reload all routes
-					if err := hr.engine.BuildLayoutCSSFile(); err != nil {
-						hr.logger.Err(err).Msg("Failed to build global css file")
-						continue
-					}
+				case filePath == hr.engine.Config.LayoutFile: // If the layout file has been updated, reload all routes
 					routeIDS = hr.engine.CacheManager.GetAllRouteIDS()
 				case hr.needsTailwindRecompile(filePath): // If tailwind is enabled and a React file has been updated, rebuild the global css file and reload all routes
-					if err := hr.engine.BuildLayoutCSSFile(); err != nil {
+					if err := hr.engine.BuildTailwindCSSFile(); err != nil {
 						hr.logger.Err(err).Msg("Failed to build global css file")
 						continue
 					}
@@ -130,14 +134,14 @@ func (hr *HotReload) startWatcher() {
 	}
 }
 
-// layoutCSSFileUpdated checks if the layout css file has been updated
-func (hr *HotReload) layoutCSSFileUpdated(filePath string) bool {
-	return utils.GetFullFilePath(filePath) == hr.engine.Config.LayoutCSSFilePath
-}
+// // layoutCSSFileUpdated checks if the layout css file has been updated
+// func (hr *HotReload) layoutCSSFileUpdated(filePath string) bool {
+// 	return utils.GetFullFilePath(filePath) == hr.engine.Config.LayoutCSSFilePath
+// }
 
 // needsTailwindRecompile checks if the file that was updated is a React file
 func (hr *HotReload) needsTailwindRecompile(filePath string) bool {
-	if hr.engine.Config.TailwindConfigPath == "" {
+	if hr.engine.Config.TailwindEnabled {
 		return false
 	}
 	fileTypes := []string{".tsx", ".ts", ".jsx", ".js"}
@@ -163,4 +167,17 @@ func (hr *HotReload) broadcastFileUpdateToClients(routeIDS []string) {
 			}
 		}
 	}
+}
+
+// https://gist.github.com/sevkin/96bdae9274465b2d09191384f86ef39d
+func getFreePort() (port int, err error) {
+	var a *net.TCPAddr
+	if a, err = net.ResolveTCPAddr("tcp", "localhost:0"); err == nil {
+		var l *net.TCPListener
+		if l, err = net.ListenTCP("tcp", a); err == nil {
+			defer l.Close()
+			return l.Addr().(*net.TCPAddr).Port, nil
+		}
+	}
+	return
 }

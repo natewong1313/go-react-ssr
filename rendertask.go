@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/buke/quickjs-go"
+	"github.com/natewong1313/go-react-ssr/internal/cache"
 	"github.com/natewong1313/go-react-ssr/internal/reactbuilder"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"github.com/rs/zerolog"
 )
 
@@ -32,7 +34,7 @@ type clientRenderResult struct {
 }
 
 // Start starts the render task, returns the rendered html, css, and js for hydration
-func (rt *renderTask) Start() (string, string, string, error) {
+func (rt *renderTask) start() (string, string, string, error) {
 	rt.serverRenderResult = make(chan serverRenderResult)
 	rt.clientRenderResult = make(chan clientRenderResult)
 	// Assigns the parent file to the routeID so that the cache can be invalidated when the parent file changes
@@ -99,25 +101,25 @@ func (rt *renderTask) buildFile(buildType string) (reactbuilder.BuildResult, err
 		return reactbuilder.BuildResult{}, err
 	}
 	if buildType == "server" {
-		return reactbuilder.BuildServer(buildContents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute)
+		return reactbuilder.BuildServer(buildContents, rt.engine.Config.FrontendSrcDir, rt.engine.Config.AssetRoute)
 	} else {
-		return reactbuilder.BuildClient(buildContents, rt.engine.Config.FrontendDir, rt.engine.Config.AssetRoute)
+		return reactbuilder.BuildClient(buildContents, rt.engine.Config.FrontendSrcDir, rt.engine.Config.AssetRoute)
 	}
 }
 
 // getBuildContents gets the required imports based on the config and returns the contents to be built with reactbuilder
 func (rt *renderTask) getBuildContents(buildType string) (string, error) {
 	var imports []string
-	if rt.engine.CachedLayoutCSSFilePath != "" {
-		imports = append(imports, fmt.Sprintf(`import "%s";`, rt.engine.CachedLayoutCSSFilePath))
+	if rt.engine.Config.TailwindEnabled {
+		imports = append(imports, fmt.Sprintf(`import "%s";`, utils.GetFullFilePath(fmt.Sprintf("%s/tailwind.css", cache.TailwindCacheDir))))
 	}
-	if rt.engine.Config.LayoutFilePath != "" {
-		imports = append(imports, fmt.Sprintf(`import Layout from "%s";`, rt.engine.Config.LayoutFilePath))
+	if rt.engine.Config.LayoutFile != "" {
+		imports = append(imports, fmt.Sprintf(`import Layout from "%s";`, rt.engine.Config.LayoutFile))
 	}
 	if buildType == "server" {
-		return reactbuilder.GenerateServerBuildContents(imports, rt.filePath, rt.engine.Config.LayoutFilePath != "")
+		return reactbuilder.GenerateServerBuildContents(imports, rt.filePath, rt.engine.Config.LayoutFile != "")
 	} else {
-		return reactbuilder.GenerateClientBuildContents(imports, rt.filePath, rt.engine.Config.LayoutFilePath != "")
+		return reactbuilder.GenerateClientBuildContents(imports, rt.filePath, rt.engine.Config.LayoutFile != "")
 	}
 }
 

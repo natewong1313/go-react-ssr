@@ -32,7 +32,7 @@ const BaseTemplate = `<!DOCTYPE html>
 	</script>
 	{{if .IsDev}}
 	<script>
-	  let socket = new WebSocket("ws://127.0.0.1:3001/ws");
+	  let socket = new WebSocket("ws://127.0.0.1:{{ .HotReloadPort }}/ws");
 	  socket.onopen = () => {
 		socket.send({{ .RouteID }});
 	  };

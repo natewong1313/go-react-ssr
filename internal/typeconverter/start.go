@@ -1,8 +1,9 @@
 package typeconverter
 
 import (
-	"github.com/natewong1313/go-react-ssr/internal/utils"
 	"os/exec"
+
+	"github.com/natewong1313/go-react-ssr/internal/cache"
 
 	_ "github.com/tkrajina/typescriptify-golang-structs/typescriptify"
 )
@@ -15,13 +16,8 @@ func Start(structsFilePath, generatedTypesPath string) error {
 	if err != nil {
 		return err
 	}
-	// Create a folder for the temporary generator files
-	cacheDir, err := utils.GetTypeConverterCacheDir()
-	if err != nil {
-		return err
-	}
 	// Create the generator file
-	temporaryFilePath, err := createTemporaryFile(structsFilePath, generatedTypesPath, cacheDir, structNames)
+	temporaryFilePath, err := createTemporaryFile(structsFilePath, generatedTypesPath, cache.TypeConverterCacheDir, structNames)
 	if err != nil {
 		return err
 	}

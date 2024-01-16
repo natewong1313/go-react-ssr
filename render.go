@@ -3,13 +3,14 @@ package go_ssr
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/natewong1313/go-react-ssr/internal/html"
-	"github.com/natewong1313/go-react-ssr/internal/utils"
-	"github.com/rs/zerolog"
 	"html/template"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/natewong1313/go-react-ssr/internal/html"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
+	"github.com/rs/zerolog"
 )
 
 // RenderConfig is the config for rendering a route
@@ -35,10 +36,10 @@ func (engine *Engine) RenderRoute(renderConfig RenderConfig) []byte {
 		logger:   zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger(),
 		routeID:  routeID,
 		props:    props,
-		filePath: filepath.ToSlash(utils.GetFullFilePath(engine.Config.FrontendDir + "/" + renderConfig.File)),
+		filePath: filepath.ToSlash(utils.GetFullFilePath(engine.Config.FrontendSrcDir + "/" + renderConfig.File)),
 		config:   renderConfig,
 	}
-	renderedHTML, css, js, err := task.Start()
+	renderedHTML, css, js, err := task.start()
 	if err != nil {
 		return html.RenderError(err, task.routeID)
 	}

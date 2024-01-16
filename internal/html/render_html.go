@@ -21,11 +21,12 @@ type Params struct {
 		Type     string
 		Title    string
 	}
-	JS         template.JS
-	CSS        template.CSS
-	RouteID    string
-	IsDev      bool
-	ServerHTML template.HTML
+	JS            template.JS
+	CSS           template.CSS
+	RouteID       string
+	IsDev         bool
+	ServerHTML    template.HTML
+	HotReloadPort string
 }
 
 // RenderHTMLString Renders the HTML template in internal/html with the given parameters
@@ -33,6 +34,7 @@ func RenderHTMLString(params Params) []byte {
 	params.IsDev = os.Getenv("APP_ENV") != "production"
 	params.OGMetaTags = getOGMetaTags(params.MetaTags)
 	params.MetaTags = getMetaTags(params.MetaTags)
+	params.HotReloadPort = os.Getenv("HOT_RELOAD_PORT")
 	t := template.Must(template.New("").Parse(BaseTemplate))
 	var output bytes.Buffer
 	err := t.Execute(&output, params)
@@ -63,9 +65,10 @@ func getOGMetaTags(metaTags map[string]string) map[string]string {
 }
 
 type ErrorParams struct {
-	Error   string
-	RouteID string
-	IsDev   bool
+	Error         string
+	RouteID       string
+	IsDev         bool
+	HotReloadPort string
 }
 
 // RenderError Renders the error template with the given error
@@ -74,9 +77,10 @@ func RenderError(e error, routeID string) []byte {
 	var output bytes.Buffer
 	_, filename, line, _ := runtime.Caller(1)
 	t.Execute(&output, ErrorParams{
-		Error:   fmt.Sprintf("%s line %d: %v", filename, line, e),
-		RouteID: routeID,
-		IsDev:   os.Getenv("APP_ENV") != "production",
+		Error:         fmt.Sprintf("%s line %d: %v", filename, line, e),
+		RouteID:       routeID,
+		IsDev:         os.Getenv("APP_ENV") != "production",
+		HotReloadPort: os.Getenv("HOT_RELOAD_PORT"),
 	})
 	return output.Bytes()
 }
