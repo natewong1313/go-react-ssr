@@ -1,13 +1,14 @@
 package main
 
 import (
+	"log"
+	"math/rand"
+	"net/http"
+
 	"example.com/echo/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	gossr "github.com/natewong1313/go-react-ssr"
-	"log"
-	"math/rand"
-	"net/http"
 )
 
 var APP_ENV string
@@ -18,12 +19,11 @@ func main() {
 	e.Static("/assets", "../frontend-mui/public/")
 
 	engine, err := gossr.New(gossr.Config{
-		AppEnv:             APP_ENV,
-		AssetRoute:         "/assets",
-		FrontendDir:        "../frontend-mui/src",
-		GeneratedTypesPath: "../frontend-mui/src/generated.d.ts",
-		PropsStructsPath:   "./models/props.go",
-		LayoutFilePath:     "Layout.tsx",
+		AppEnv:           APP_ENV,
+		AssetRoute:       "/assets",
+		FrontendSrcDir:   "../frontend/src",
+		PropsStructsPath: "./models/props.go",
+		LayoutFile:       "Layout.tsx",
 	})
 	if err != nil {
 		log.Fatal("Failed to init go-react-ssr")

@@ -23,11 +23,10 @@ func main() {
 	app.Static("/assets", "../frontend/public/")
 
 	engine, err := gossr.New(gossr.Config{
-		AppEnv:             APP_ENV,
-		AssetRoute:         "/assets",
-		FrontendDir:        "../frontend/src",
-		GeneratedTypesPath: "../frontend/src/generated.d.ts",
-		PropsStructsPath:   "./models/props.go",
+		AppEnv:           APP_ENV,
+		AssetRoute:       "/assets",
+		FrontendSrcDir:   "../frontend/src",
+		PropsStructsPath: "./models/props.go",
 	})
 	if err != nil {
 		log.Fatal("Failed to init go-react-ssr")
