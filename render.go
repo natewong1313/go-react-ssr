@@ -1,15 +1,16 @@
 package go_ssr
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/natewong1313/go-react-ssr/internal/html"
-	"github.com/natewong1313/go-react-ssr/internal/utils"
-	"github.com/rs/zerolog"
 	"html/template"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/goccy/go-json"
+	"github.com/natewong1313/go-react-ssr/internal/html"
+	"github.com/natewong1313/go-react-ssr/internal/utils"
+	"github.com/rs/zerolog"
 )
 
 // RenderConfig is the config for rendering a route
